@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Camera from './components/Camera';
 import Classification from './components/Classification';
 import Dashboard from './components/Dashboard';
+import ServiceDiscovery from './components/ServiceDiscovery';
+import BookingForm from './components/BookingForm';
 import apiService from './services/api';
 import './App.css';
 
@@ -10,6 +12,8 @@ function App() {
   const [classificationResult, setClassificationResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
+  const [currentWasteType, setCurrentWasteType] = useState(null);
 
   const handleImageCapture = async (imageFile) => {
     try {
@@ -35,7 +39,34 @@ function App() {
   const handleNewClassification = () => {
     setClassificationResult(null);
     setImagePreview(null);
+    setSelectedService(null);
+    setCurrentWasteType(null);
     setCurrentView('home');
+  };
+
+  const handleFindServices = (wasteType) => {
+    setCurrentWasteType(wasteType);
+    setCurrentView('services');
+  };
+
+  const handleServiceSelect = (service) => {
+    setSelectedService(service);
+    setCurrentView('booking');
+  };
+
+  const handleBookingComplete = (booking) => {
+    alert(`Booking created successfully! Booking ID: ${booking.id}`);
+    setCurrentView('dashboard');
+  };
+
+  const handleBackToClassification = () => {
+    setCurrentView('classification');
+    setSelectedService(null);
+  };
+
+  const handleBackToServices = () => {
+    setCurrentView('services');
+    setSelectedService(null);
   };
 
   const renderContent = () => {
@@ -47,6 +78,24 @@ function App() {
             isLoading={isLoading}
             imagePreview={imagePreview}
             onNewClassification={handleNewClassification}
+            onFindServices={handleFindServices}
+          />
+        );
+      case 'services':
+        return (
+          <ServiceDiscovery
+            wasteType={currentWasteType}
+            onServiceSelect={handleServiceSelect}
+            onBack={handleBackToClassification}
+          />
+        );
+      case 'booking':
+        return (
+          <BookingForm
+            service={selectedService}
+            wasteType={currentWasteType}
+            onBookingComplete={handleBookingComplete}
+            onBack={handleBackToServices}
           />
         );
       case 'dashboard':

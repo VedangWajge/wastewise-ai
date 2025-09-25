@@ -110,8 +110,27 @@
 
 .recommendations-section,
 .environmental-section,
+.action-section,
 .predictions-section {
   margin-bottom: 20px;
+}
+
+.action-section {
+  background: linear-gradient(135deg, #e8f5e8, #f0fff0);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid #4caf50;
+}
+
+.action-section h4 {
+  margin: 0 0 10px 0;
+  color: #2e7d2e;
+}
+
+.action-section p {
+  margin: 0 0 20px 0;
+  color: #333;
 }
 
 .recommendations-section h4,

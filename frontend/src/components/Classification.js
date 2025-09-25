@@ -1,7 +1,7 @@
 import React from 'react';
 import './Classification.css';
 
-const Classification = ({ result, isLoading, imagePreview, onNewClassification }) => {
+const Classification = ({ result, isLoading, imagePreview, onNewClassification, onFindServices }) => {
   if (isLoading) {
     return (
       <div className="classification-container">
@@ -87,6 +87,17 @@ const Classification = ({ result, isLoading, imagePreview, onNewClassification }
         <div className="environmental-section">
           <h4>🌍 Environmental Impact</h4>
           <p>{result.classification.environmental_impact}</p>
+        </div>
+
+        <div className="action-section">
+          <h4>🚀 Take Action</h4>
+          <p>Ready to dispose of your {result.classification.waste_type} waste responsibly?</p>
+          <button
+            className="btn btn-success btn-large"
+            onClick={() => onFindServices && onFindServices(result.classification.waste_type)}
+          >
+            🔍 Find Services Near You
+          </button>
         </div>
 
         {result.classification.all_predictions && (
