@@ -1,9 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Use your computer's IP address for testing on physical device
-// or use 10.0.2.2 for Android emulator, 127.0.0.1 for iOS simulator
-const API_BASE_URL = 'http://192.168.1.100:5000/api'; // Replace with your actual IP
+// IMPORTANT: Replace this IP with your computer's actual IP address
+// Run get-ip.bat (Windows) or get-ip.sh (Mac/Linux) to find your IP
+// For Android emulator use: 10.0.2.2:5000/api
+// For iOS simulator use: localhost:5000/api or 127.0.0.1:5000/api
+const API_BASE_URL = 'http://192.168.1.2:5000/api'; // Update this with your computer's IP
 
 class ApiService {
   constructor() {
@@ -52,6 +54,73 @@ class ApiService {
     } catch (error) {
       throw new Error('Health check failed');
     }
+  }
+
+  // === NETWORK CONNECTIVITY TEST ===
+  async networkTest() {
+    try {
+      const response = await this.client.get('/network-test');
+      return response.data;
+    } catch (error) {
+      throw new Error('Network test failed: ' + error.message);
+    }
+  }
+
+  async corsTest() {
+    try {
+      const response = await this.client.get('/cors-test');
+      return response.data;
+    } catch (error) {
+      throw new Error('CORS test failed: ' + error.message);
+    }
+  }
+
+  async fullConnectivityTest() {
+    const results = {
+      timestamp: new Date().toISOString(),
+      tests: {},
+      overall_status: 'unknown'
+    };
+
+    try {
+      // Test 1: Basic Health Check
+      results.tests.health = await this.healthCheck();
+      results.tests.health.status = 'PASSED';
+    } catch (error) {
+      results.tests.health = { status: 'FAILED', error: error.message };
+    }
+
+    try {
+      // Test 2: Network Connectivity
+      results.tests.network = await this.networkTest();
+      results.tests.network.status = 'PASSED';
+    } catch (error) {
+      results.tests.network = { status: 'FAILED', error: error.message };
+    }
+
+    try {
+      // Test 3: CORS Configuration
+      results.tests.cors = await this.corsTest();
+      results.tests.cors.status = 'PASSED';
+    } catch (error) {
+      results.tests.cors = { status: 'FAILED', error: error.message };
+    }
+
+    // Determine overall status
+    const testResults = Object.values(results.tests);
+    const passedTests = testResults.filter(test => test.status === 'PASSED').length;
+    const totalTests = testResults.length;
+
+    if (passedTests === totalTests) {
+      results.overall_status = 'ALL_PASSED';
+    } else if (passedTests > 0) {
+      results.overall_status = 'PARTIAL_PASSED';
+    } else {
+      results.overall_status = 'ALL_FAILED';
+    }
+
+    results.summary = `${passedTests}/${totalTests} tests passed`;
+    return results;
   }
 
   // === CLASSIFICATION ===

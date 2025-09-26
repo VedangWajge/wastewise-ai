@@ -1,0 +1,9 @@
+{
+  "name": "WasteWise",
+  "displayName": "WasteWise - Smart Waste Management",
+  "version": "1.0.0",
+  "description": "AI-Powered Smart Waste Segregation Mobile App",
+  "main": "index.js",
+  "author": "Vedang Wajge",
+  "license": "MIT"
+}

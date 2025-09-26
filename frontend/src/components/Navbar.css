@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+.navbar {
+  background: linear-gradient(135deg, #047122 0%, #065d1f 100%);
+  box-shadow: 0 4px 20px rgba(4, 113, 34, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 0;
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  position: relative;
+}
+
+.navbar-brand {
+  flex: 1;
+}
+
+.brand-logo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-icon {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.brand-tagline {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  margin-top: -0.2rem;
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-nav {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0.5rem;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-link {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: none;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+.nav-link:hover::before {
+  left: 0;
+}
+
+.nav-link:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.nav-link.active {
+  color: #047122;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.nav-link.active:hover {
+  color: #047122;
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+}
+
+.nav-icon {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.toggle-bar {
+  width: 25px;
+  height: 3px;
+  background: white;
+  margin: 3px 0;
+  transition: 0.3s;
+  border-radius: 2px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 1rem;
+  }
+
+  .brand-logo {
+    font-size: 1.6rem;
+  }
+
+  .brand-tagline {
+    font-size: 0.8rem;
+  }
+
+  .navbar-toggle {
+    display: flex;
+  }
+
+  .navbar-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #047122 0%, #065d1f 100%);
+    box-shadow: 0 4px 20px rgba(4, 113, 34, 0.3);
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-menu.active {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .navbar-nav {
+    flex-direction: column;
+    width: 100%;
+    padding: 1rem 0;
+    gap: 0.5rem;
+  }
+
+  .nav-link {
+    width: 100%;
+    text-align: center;
+    padding: 1rem 2rem;
+    border-radius: 0;
+    justify-content: center;
+  }
+
+  .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: none;
+  }
+
+  .toggle-bar:nth-child(1).active {
+    transform: rotate(-45deg) translate(-5px, 6px);
+  }
+
+  .toggle-bar:nth-child(2).active {
+    opacity: 0;
+  }
+
+  .toggle-bar:nth-child(3).active {
+    transform: rotate(45deg) translate(-5px, -6px);
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-container {
+    padding: 0.8rem;
+  }
+
+  .brand-logo {
+    font-size: 1.4rem;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    padding: 0.8rem 1.5rem;
+  }
+}

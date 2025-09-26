@@ -42,6 +42,23 @@ WasteWise/
 
 ## 🚀 Quick Start
 
+### **⚡ One-Click Setup (Recommended)**
+```bash
+# Windows
+start-all.bat
+
+# Mac/Linux
+./start-all.sh
+```
+This starts backend, web frontend, and mobile Metro bundler automatically!
+
+### **📱 Add Mobile Support**
+```bash
+# In separate terminal, connect your mobile device
+start-mobile.bat     # Windows
+./start-mobile.sh    # Mac/Linux
+```
+
 ### Prerequisites
 
 - **Node.js** (v14 or higher)
@@ -49,7 +66,7 @@ WasteWise/
 - **npm** or **yarn**
 - **pip** (Python package installer)
 
-### Installation Steps
+### **Manual Installation Steps**
 
 #### 1. Clone the Repository
 ```bash
@@ -58,7 +75,6 @@ cd wastewise
 ```
 
 #### 2. Set Up Backend (Flask)
-
 ```bash
 # Navigate to backend directory
 cd backend
@@ -75,14 +91,12 @@ source venv/bin/activate
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Start Flask server
+# Start Flask server (accessible from mobile devices)
 python app.py
 ```
-
-The Flask server will start at `http://localhost:5000`
+✅ **Backend runs on:** `http://0.0.0.0:5000` (accessible from mobile devices)
 
 #### 3. Set Up Frontend (React)
-
 ```bash
 # Open new terminal and navigate to frontend
 cd frontend
@@ -93,8 +107,36 @@ npm install
 # Start React development server
 npm start
 ```
+✅ **Web app opens at:** `http://localhost:3000`
 
-The React app will open at `http://localhost:3000`
+#### 4. Set Up Mobile App (Optional)
+```bash
+# Navigate to mobile app directory
+cd mobile-app
+
+# Install dependencies
+npm install
+
+# For iOS (macOS only)
+cd ios && pod install && cd ..
+
+# Update API configuration with your computer's IP
+# Edit: mobile-app/src/services/ApiService.js
+# Use get-ip.bat (Windows) or get-ip.sh (Mac/Linux) to find your IP
+
+# Start Metro bundler
+npm start
+
+# Connect device (in separate terminal)
+npx react-native run-android  # Android
+npx react-native run-ios      # iOS (macOS only)
+```
+
+### **🌐 Access Your Applications**
+- **Web App:** `http://localhost:3000`
+- **Mobile App:** Install on your device via React Native
+- **API Backend:** `http://localhost:5000/api`
+- **Mobile API:** `http://YOUR_IP:5000/api` (replace with your computer's IP)
 
 ## 📋 API Endpoints
 

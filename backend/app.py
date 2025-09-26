@@ -33,6 +33,46 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'message': 'Wastewise API is running',
+        'timestamp': datetime.now().isoformat(),
+        'server_info': {
+            'platform': 'Flask',
+            'version': '1.0.0',
+            'endpoints_available': True
+        }
+    })
+
+@app.route('/api/network-test', methods=['GET'])
+def network_test():
+    """Test endpoint to verify mobile device connectivity"""
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
+    user_agent = request.headers.get('User-Agent', 'Unknown')
+
+    return jsonify({
+        'status': 'connected',
+        'message': 'Mobile device successfully connected to backend',
+        'client_info': {
+            'ip_address': client_ip,
+            'user_agent': user_agent,
+            'timestamp': datetime.now().isoformat()
+        },
+        'server_info': {
+            'host': '0.0.0.0',
+            'port': 5000,
+            'debug_mode': True
+        },
+        'connection_test': 'PASSED'
+    })
+
+@app.route('/api/cors-test', methods=['OPTIONS', 'GET', 'POST'])
+def cors_test():
+    """Test CORS configuration for mobile devices"""
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight successful'})
+
+    return jsonify({
+        'cors_test': 'PASSED',
+        'method': request.method,
+        'origin': request.headers.get('Origin', 'No Origin'),
         'timestamp': datetime.now().isoformat()
     })
 
@@ -367,4 +407,5 @@ def get_waste_trends():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Allow connections from mobile devices on the same network
+    app.run(debug=True, host='0.0.0.0', port=5000)

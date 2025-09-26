@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Camera from './components/Camera';
 import Classification from './components/Classification';
 import Dashboard from './components/Dashboard';
@@ -107,36 +109,13 @@ function App() {
 
   return (
     <div className="App">
-      <header className="app-header">
-        <div className="header-content">
-          <h1 className="app-title">
-            🌱 WasteWise
-          </h1>
-          <p className="app-subtitle">AI-Powered Smart Waste Segregation</p>
-        </div>
-        <nav className="app-nav">
-          <button
-            className={`nav-btn ${currentView === 'home' ? 'active' : ''}`}
-            onClick={() => setCurrentView('home')}
-          >
-            📸 Classify
-          </button>
-          <button
-            className={`nav-btn ${currentView === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setCurrentView('dashboard')}
-          >
-            📊 Dashboard
-          </button>
-        </nav>
-      </header>
+      <Navbar currentView={currentView} setCurrentView={setCurrentView} />
 
       <main className="app-main">
         {renderContent()}
       </main>
 
-      <footer className="app-footer">
-        <p>© 2024 WasteWise - Making waste management smarter with AI</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
