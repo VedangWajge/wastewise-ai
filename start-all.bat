@@ -41,10 +41,10 @@ echo 2. Web Frontend: Opening at http://localhost:3000
 echo 3. Mobile Metro: Ready for device connection
 echo.
 echo To connect your mobile device:
-echo   Android: npx react-native run-android
-echo   iOS:     npx react-native run-ios
+echo   Traditional: start-mobile.bat (requires Android Studio)
+echo   Easy option: setup-expo.bat (just scan QR code!)
 echo.
-echo Or run: start-mobile.bat (in a new terminal)
+echo 📱 For quick mobile demo, we recommend using Expo!
 echo.
 echo ===== Network Info =====
 echo Your computer's IP addresses:
