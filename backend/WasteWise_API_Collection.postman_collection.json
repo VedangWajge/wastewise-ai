@@ -1,0 +1,1341 @@
+{
+  "info": {
+    "name": "WasteWise API v2.0",
+    "description": "Complete API collection for WasteWise backend testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "{{base_url}}"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏥 System Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Network Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/network-test",
+              "host": ["{{baseUrl}}"],
+              "path": ["network-test"]
+            }
+          }
+        },
+        {
+          "name": "CORS Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cors-test",
+              "host": ["{{baseUrl}}"],
+              "path": ["cors-test"]
+            }
+          }
+        },
+        {
+          "name": "Global Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["statistics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.user_id) {",
+                  "        pm.environment.set('user_id', response.user_id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+919876543210\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\",\n  \"address\": \"123 Main Street\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400001\",\n  \"role\": \"user\",\n  \"terms_accepted\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.tokens && response.tokens.access_token) {",
+                  "        pm.environment.set('access_token', response.tokens.access_token);",
+                  "        pm.environment.set('refresh_token', response.tokens.refresh_token);",
+                  "    }",
+                  "    if (response.user && response.user.id) {",
+                  "        pm.environment.set('user_id', response.user.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"remember_me\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Updated Doe\",\n  \"phone\": \"+919876543211\",\n  \"address\": \"456 Updated Street\",\n  \"bio\": \"Environmental enthusiast\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"SecurePass123!\",\n  \"new_password\": \"NewSecurePass123!\",\n  \"confirm_password\": \"NewSecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "change-password"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🗂️ Waste Classification",
+      "item": [
+        {
+          "name": "Classify Waste Image",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.classification_id) {",
+                  "        pm.environment.set('classification_id', response.classification_id);",
+                  "    }",
+                  "    if (response.classification && response.classification.waste_type) {",
+                  "        pm.environment.set('waste_type', response.classification.waste_type);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Upload a waste image (JPG, PNG, GIF)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/classify",
+              "host": ["{{baseUrl}}"],
+              "path": ["classify"]
+            }
+          }
+        },
+        {
+          "name": "Get Waste Type Info - Plastic",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/waste-info/plastic",
+              "host": ["{{baseUrl}}"],
+              "path": ["waste-info", "plastic"]
+            }
+          }
+        },
+        {
+          "name": "Get Recent Classifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/recent?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["recent"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Booking Management",
+      "item": [
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.booking && response.booking.id) {",
+                  "        pm.environment.set('booking_id', response.booking.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_provider_id\": \"sp_001\",\n  \"waste_type\": \"plastic\",\n  \"quantity\": \"5 kg\",\n  \"pickup_address\": \"123 Main Street, Mumbai, 400001\",\n  \"scheduled_date\": \"2024-02-15T10:00:00Z\",\n  \"scheduled_time_slot\": \"10:00 AM - 12:00 PM\",\n  \"special_instructions\": \"Please call before arrival\",\n  \"contact_person\": \"John Doe\",\n  \"contact_phone\": \"+919876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "create"]
+            }
+          }
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/my-bookings?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "my-bookings"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Booking Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{booking_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{booking_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Track Booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{booking_id}}/track",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{booking_id}}", "track"]
+            }
+          }
+        },
+        {
+          "name": "Reschedule Booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_scheduled_date\": \"2024-02-16T14:00:00Z\",\n  \"new_time_slot\": \"2:00 PM - 4:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{booking_id}}/reschedule",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{booking_id}}", "reschedule"]
+            }
+          }
+        },
+        {
+          "name": "Rate Booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"title\": \"Excellent Service\",\n  \"comment\": \"Very professional and timely pickup. Highly recommended!\",\n  \"service_quality\": 5,\n  \"punctuality\": 5,\n  \"cleanliness\": 5,\n  \"communication\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{booking_id}}/rate",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{booking_id}}", "rate"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Change of plans\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{booking_id}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{booking_id}}", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Service Providers",
+      "item": [
+        {
+          "name": "Search Service Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/services/search?waste_type=plastic&city=Mumbai&min_rating=4.0&sort_by=rating",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "search"],
+              "query": [
+                {
+                  "key": "waste_type",
+                  "value": "plastic"
+                },
+                {
+                  "key": "city",
+                  "value": "Mumbai"
+                },
+                {
+                  "key": "min_rating",
+                  "value": "4.0"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "rating"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Service Provider Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/services/sp_001",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "sp_001"]
+            }
+          }
+        },
+        {
+          "name": "Get Provider Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/services/sp_001/reviews?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "sp_001", "reviews"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register as Service Provider",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"business_name\": \"EcoClean Services\",\n  \"business_type\": \"Private\",\n  \"specialities\": [\"plastic\", \"paper\", \"glass\"],\n  \"license_number\": \"WM2024001\",\n  \"address\": \"456 Business Avenue\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400001\",\n  \"contact_email\": \"contact@ecoclean.com\",\n  \"contact_phone\": \"+919876543210\",\n  \"operating_hours\": \"9:00 AM - 6:00 PM\",\n  \"capacity_per_day\": \"500 kg\",\n  \"website_url\": \"https://ecoclean.com\",\n  \"description\": \"Professional waste management and recycling services\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/services/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Payments",
+      "item": [
+        {
+          "name": "Get Payment Methods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/methods",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "methods"]
+            }
+          }
+        },
+        {
+          "name": "Initiate Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.payment_id) {",
+                  "        pm.environment.set('payment_id', response.payment_id);",
+                  "    }",
+                  "    if (response.order_id) {",
+                  "        pm.environment.set('order_id', response.order_id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": \"{{booking_id}}\",\n  \"amount\": 150.00,\n  \"payment_method\": \"card\",\n  \"currency\": \"INR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/initiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "initiate"]
+            }
+          }
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_id\": \"{{payment_id}}\",\n  \"razorpay_order_id\": \"{{order_id}}\",\n  \"razorpay_payment_id\": \"pay_test123456\",\n  \"razorpay_signature\": \"test_signature_123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Get Payment History",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/history?limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "history"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Request Refund",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Service not provided as expected\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/{{payment_id}}/refund",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "{{payment_id}}", "refund"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Rewards & Gamification",
+      "item": [
+        {
+          "name": "Get User Points",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rewards/points",
+              "host": ["{{baseUrl}}"],
+              "path": ["rewards", "points"]
+            }
+          }
+        },
+        {
+          "name": "Get User Badges",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rewards/badges",
+              "host": ["{{baseUrl}}"],
+              "path": ["rewards", "badges"]
+            }
+          }
+        },
+        {
+          "name": "Get Leaderboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rewards/leaderboard?period=weekly&category=points",
+              "host": ["{{baseUrl}}"],
+              "path": ["rewards", "leaderboard"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "weekly"
+                },
+                {
+                  "key": "category",
+                  "value": "points"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Reward Catalog",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rewards/catalog",
+              "host": ["{{baseUrl}}"],
+              "path": ["rewards", "catalog"]
+            }
+          }
+        },
+        {
+          "name": "Redeem Reward",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reward_id\": \"eco_bag\",\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rewards/redeem",
+              "host": ["{{baseUrl}}"],
+              "path": ["rewards", "redeem"]
+            }
+          }
+        },
+        {
+          "name": "Get Challenges",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rewards/challenges",
+              "host": ["{{baseUrl}}"],
+              "path": ["rewards", "challenges"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Analytics",
+      "item": [
+        {
+          "name": "Get Personal Analytics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/personal?period=month&predictions=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "personal"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "month"
+                },
+                {
+                  "key": "predictions",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Community Analytics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/community/comm_001?period=month",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "community", "comm_001"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "month"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Comparison Analytics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/comparison?type=user&period=month",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "comparison"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "user"
+                },
+                {
+                  "key": "period",
+                  "value": "month"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Analytics Data",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"personal\",\n  \"format\": \"json\",\n  \"period\": \"month\",\n  \"include_charts\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/analytics/export",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "export"]
+            }
+          }
+        },
+        {
+          "name": "Get AI Insights",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/insights?type=personal",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "insights"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "personal"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛠️ Admin Panel",
+      "item": [
+        {
+          "name": "Get Admin Dashboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Manage Users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Manage Service Providers",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/service-providers?status=pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "service-providers"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Service Provider",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"approve\",\n  \"notes\": \"All documents verified and compliance confirmed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/service-providers/sp_001/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "service-providers", "sp_001", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Generate Reports",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports?type=overview&period=month",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reports"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "overview"
+                },
+                {
+                  "key": "period",
+                  "value": "month"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get System Settings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "settings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Search & Utilities",
+      "item": [
+        {
+          "name": "Global Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/search?q=plastic&category=all&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "plastic"
+                },
+                {
+                  "key": "category",
+                  "value": "all"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
