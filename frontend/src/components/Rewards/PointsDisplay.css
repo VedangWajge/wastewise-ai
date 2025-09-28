@@ -1,0 +1,170 @@
+.points-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.points-display:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.points-icon {
+  font-size: 1rem;
+}
+
+.points-value {
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+}
+
+.points-label {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.points-display.large {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border-radius: 25px;
+}
+
+.points-display.large .points-value {
+  font-size: 1.2rem;
+  min-width: 30px;
+}
+
+.points-display.large .points-icon {
+  font-size: 1.2rem;
+}
+
+.points-display.small {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border-radius: 15px;
+}
+
+.points-display.small .points-value {
+  font-size: 0.8rem;
+  min-width: 15px;
+}
+
+.points-display.small .points-icon {
+  font-size: 0.8rem;
+}
+
+.points-display.minimal {
+  background: transparent;
+  color: #27ae60;
+  border: 2px solid #27ae60;
+  box-shadow: none;
+}
+
+.points-display.minimal:hover {
+  background: #27ae60;
+  color: white;
+}
+
+.points-display.earned {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.points-display.spent {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.points-display.warning {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.points-animation {
+  animation: pointsGlow 0.6s ease-in-out;
+}
+
+@keyframes pointsGlow {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(39, 174, 96, 0.5); }
+  100% { transform: scale(1); }
+}
+
+.points-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.points-breakdown .main-points {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.points-breakdown .sub-points {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.points-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.points-tooltip .tooltip-content {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 10;
+  margin-top: 5px;
+}
+
+.points-tooltip:hover .tooltip-content {
+  opacity: 1;
+  visibility: visible;
+}
+
+.points-tooltip .tooltip-content::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
+@media (max-width: 480px) {
+  .points-display {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  .points-display.large {
+    font-size: 0.9rem;
+    padding: 10px 16px;
+  }
+
+  .points-breakdown {
+    gap: 2px;
+  }
+}

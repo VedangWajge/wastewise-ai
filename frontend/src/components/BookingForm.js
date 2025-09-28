@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
 import './BookingForm.css';
 
 const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
+  const { user, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     quantity: '',
-    pickup_address: '',
+    pickup_address: user?.address || '',
     scheduled_date: '',
-    scheduled_time: '',
+    scheduled_time_slot: '',
     special_instructions: '',
-    contact_phone: '',
-    contact_name: ''
+    contact_phone: user?.phone || '',
+    contact_person: user?.full_name || ''
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [authWarning, setAuthWarning] = useState(!isAuthenticated);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -43,21 +46,28 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
     if (!formData.scheduled_date) {
       newErrors.scheduled_date = 'Please select a date';
     }
-    if (!formData.scheduled_time) {
-      newErrors.scheduled_time = 'Please select a time';
+    if (!formData.scheduled_time_slot) {
+      newErrors.scheduled_time_slot = 'Please select a time slot';
     }
-    if (!formData.contact_name.trim()) {
-      newErrors.contact_name = 'Contact name is required';
+    if (!formData.contact_person.trim()) {
+      newErrors.contact_person = 'Contact name is required';
     }
     if (!formData.contact_phone.trim()) {
       newErrors.contact_phone = 'Contact phone is required';
     }
 
     // Check if date is in the future
-    const selectedDate = new Date(`${formData.scheduled_date}T${formData.scheduled_time}`);
+    const selectedDate = new Date(formData.scheduled_date);
     const now = new Date();
+    selectedDate.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
     if (selectedDate <= now) {
-      newErrors.scheduled_date = 'Please select a future date and time';
+      newErrors.scheduled_date = 'Please select a future date';
+    }
+
+    // Check authentication
+    if (!isAuthenticated) {
+      newErrors.auth = 'Please login to create a booking';
     }
 
     setErrors(newErrors);
@@ -79,12 +89,11 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
         waste_type: wasteType,
         quantity: `${formData.quantity} kg`,
         pickup_address: formData.pickup_address,
-        scheduled_date: `${formData.scheduled_date}T${formData.scheduled_time}:00Z`,
+        scheduled_date: `${formData.scheduled_date}T10:00:00Z`,
+        scheduled_time_slot: formData.scheduled_time_slot,
         special_instructions: formData.special_instructions,
-        contact_details: {
-          name: formData.contact_name,
-          phone: formData.contact_phone
-        }
+        contact_person: formData.contact_person,
+        contact_phone: formData.contact_phone
       };
 
       const result = await apiService.createBooking(bookingData);
@@ -94,7 +103,7 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
       }
     } catch (error) {
       console.error('Booking error:', error);
-      setErrors({ general: 'Failed to create booking. Please try again.' });
+      setErrors({ general: error.message || 'Failed to create booking. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -118,6 +127,33 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
 
     return '09:00'; // Default minimum time
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="booking-form-container">
+        <div className="form-header">
+          <button className="back-btn" onClick={onBack}>
+            ← Back to Services
+          </button>
+          <h2>Book Waste Collection Service</h2>
+        </div>
+
+        <div className="auth-warning">
+          <div className="auth-warning-icon">🔐</div>
+          <h3>Login Required</h3>
+          <p>You need to login to your account to book waste collection services.</p>
+          <div className="auth-warning-actions">
+            <button className="btn btn-primary" onClick={() => window.location.hash = 'login'}>
+              Login Now
+            </button>
+            <button className="btn btn-secondary" onClick={onBack}>
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="booking-form-container">
@@ -231,19 +267,24 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="scheduled_time">
-                Preferred Time <span className="required">*</span>
+              <label htmlFor="scheduled_time_slot">
+                Preferred Time Slot <span className="required">*</span>
               </label>
-              <input
-                type="time"
-                id="scheduled_time"
-                name="scheduled_time"
-                value={formData.scheduled_time}
+              <select
+                id="scheduled_time_slot"
+                name="scheduled_time_slot"
+                value={formData.scheduled_time_slot}
                 onChange={handleInputChange}
-                min={getMinTime()}
-                className={errors.scheduled_time ? 'error' : ''}
-              />
-              {errors.scheduled_time && <span className="error-text">{errors.scheduled_time}</span>}
+                className={errors.scheduled_time_slot ? 'error' : ''}
+              >
+                <option value="">Select a time slot</option>
+                <option value="9:00 AM - 11:00 AM">9:00 AM - 11:00 AM</option>
+                <option value="11:00 AM - 1:00 PM">11:00 AM - 1:00 PM</option>
+                <option value="1:00 PM - 3:00 PM">1:00 PM - 3:00 PM</option>
+                <option value="3:00 PM - 5:00 PM">3:00 PM - 5:00 PM</option>
+                <option value="5:00 PM - 7:00 PM">5:00 PM - 7:00 PM</option>
+              </select>
+              {errors.scheduled_time_slot && <span className="error-text">{errors.scheduled_time_slot}</span>}
             </div>
           </div>
 
@@ -289,19 +330,19 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="contact_name">
+              <label htmlFor="contact_person">
                 Contact Name <span className="required">*</span>
               </label>
               <input
                 type="text"
-                id="contact_name"
-                name="contact_name"
-                value={formData.contact_name}
+                id="contact_person"
+                name="contact_person"
+                value={formData.contact_person}
                 onChange={handleInputChange}
                 placeholder="Your name"
-                className={errors.contact_name ? 'error' : ''}
+                className={errors.contact_person ? 'error' : ''}
               />
-              {errors.contact_name && <span className="error-text">{errors.contact_name}</span>}
+              {errors.contact_person && <span className="error-text">{errors.contact_person}</span>}
             </div>
 
             <div className="form-group">

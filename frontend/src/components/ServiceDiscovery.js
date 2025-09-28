@@ -9,7 +9,12 @@ const ServiceDiscovery = ({ wasteType, onServiceSelect, onBack }) => {
   const [selectedService, setSelectedService] = useState(null);
 
   useEffect(() => {
-    fetchNearbyServices();
+    if (wasteType) {
+      fetchNearbyServices();
+    } else {
+      setLoading(false);
+      setError('No waste type specified. Please go back and classify your waste first.');
+    }
   }, [wasteType]);
 
   const fetchNearbyServices = async () => {
@@ -60,7 +65,7 @@ const ServiceDiscovery = ({ wasteType, onServiceSelect, onBack }) => {
       <div className="service-discovery">
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Finding services for {wasteType} waste...</p>
+          <p>Finding services for {wasteType || 'unknown'} waste...</p>
         </div>
       </div>
     );
@@ -90,7 +95,7 @@ const ServiceDiscovery = ({ wasteType, onServiceSelect, onBack }) => {
         <button className="back-btn" onClick={onBack}>
           ← Back
         </button>
-        <h2>Services for {wasteType.toUpperCase()} Waste</h2>
+        <h2>Services for {wasteType ? wasteType.toUpperCase() : 'UNKNOWN'} Waste</h2>
         <p>{services.length} services found near you</p>
       </div>
 
@@ -210,7 +215,7 @@ const ServiceDiscovery = ({ wasteType, onServiceSelect, onBack }) => {
         <div className="no-services">
           <div className="no-services-icon">😔</div>
           <h3>No Services Available</h3>
-          <p>Sorry, no services are currently available for {wasteType} waste in your area.</p>
+          <p>Sorry, no services are currently available for {wasteType || 'this type of'} waste in your area.</p>
           <button className="btn btn-primary" onClick={onBack}>
             Try Different Waste Type
           </button>
