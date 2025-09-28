@@ -6,9 +6,10 @@ yarn-debug.log*
 yarn-error.log*
 
 # Production builds
-/build
+build/
+!frontend/build/
 /dist
-frontend/build/
+# frontend/build/ (commented out to allow committing build files)
 frontend/dist/
 
 # Environment files
@@ -46,9 +47,11 @@ uploads/
 backend/uploads/
 *.jpg
 *.jpeg
-*.png
 *.gif
 *.webp
+# Allow PNG files in frontend/public (logo files)
+*.png
+!frontend/public/*.png
 
 # IDE files
 .vscode/
@@ -125,7 +128,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public (commented out to allow frontend/public)
 
 # Storybook build outputs
 .out
