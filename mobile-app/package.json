@@ -4,9 +4,9 @@
   "description": "WasteWise Mobile App - AI-Powered Smart Waste Segregation",
   "main": "index.js",
   "scripts": {
+    "start": "react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "start": "react-native start",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "build:android": "cd android && ./gradlew assembleRelease",
@@ -23,7 +23,6 @@
     "react-native-permissions": "^3.10.1",
     "react-native-geolocation-service": "^5.3.1",
     "react-native-push-notification": "^8.1.1",
-    "react-native-charts-wrapper": "^0.5.11",
     "react-native-gesture-handler": "^2.14.0",
     "react-native-reanimated": "^3.6.2",
     "react-native-safe-area-context": "^4.7.4",
@@ -36,21 +35,21 @@
     "react-native-linear-gradient": "^2.8.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
-    "@babel/preset-env": "^7.20.0",
-    "@babel/runtime": "^7.20.0",
+    "@babel/core": "^7.22.9",
+    "@babel/runtime": "^7.22.9",
     "@react-native/eslint-config": "^0.72.2",
-    "@react-native/metro-config": "^0.72.11",
-    "@tsconfig/react-native": "^3.0.0",
-    "@types/react": "^18.0.24",
-    "@types/react-test-renderer": "^18.0.0",
-    "babel-jest": "^29.2.1",
-    "eslint": "^8.19.0",
-    "jest": "^29.2.1",
-    "metro-react-native-babel-preset": "0.76.8",
-    "prettier": "^2.4.1",
+    "metro-react-native-babel-preset": "^0.76.8",
+    "@types/react": "^18.2.7",
+    "@types/react-test-renderer": "^18.2.0",
+    "babel-jest": "^29.6.2",
+    "eslint": "^8.45.0",
+    "jest": "^29.6.2",
     "react-test-renderer": "18.2.0",
-    "typescript": "4.8.4"
+    "typescript": "^5.2.2",
+    "prettier": "^3.1.0"
+  },
+  "jest": {
+    "preset": "react-native"
   },
   "engines": {
     "node": ">=16"
@@ -71,5 +70,5 @@
   ],
   "author": "Vedang Wajge",
   "license": "MIT",
-  "private": false
+  "private": true
 }

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import './Auth.css';
+import React, { useState } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import "./Auth.css";
 
 const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
@@ -15,16 +15,16 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -33,13 +33,13 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
     const newErrors = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
 
     setErrors(newErrors);
@@ -62,7 +62,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
       }
     } catch (error) {
       setErrors({
-        submit: error.message || 'Login failed. Please try again.'
+        submit: error.message || "Login failed. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -79,9 +79,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           {errors.submit && (
-            <div className="error-message">
-              {errors.submit}
-            </div>
+            <div className="error-message">{errors.submit}</div>
           )}
 
           <div className="form-group">
@@ -92,7 +90,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'error' : ''}
+              className={errors.email ? "error" : ""}
               placeholder="Enter your email"
               disabled={isLoading}
             />
@@ -109,7 +107,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'error' : ''}
+              className={errors.password ? "error" : ""}
               placeholder="Enter your password"
               disabled={isLoading}
             />
@@ -138,15 +136,18 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
             disabled={isLoading}
           >
             {isLoading ? (
-              <span className="loading-spinner">Signing in...</span>
+              <span className="loading-spinner">
+                <span className="spinner"></span>
+                Signing in...
+              </span>
             ) : (
-              'Sign In'
+              "Sign In"
             )}
           </button>
 
           <div className="auth-links">
             <p>
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <button
                 type="button"
                 className="link-button"

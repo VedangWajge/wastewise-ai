@@ -205,9 +205,7 @@
   align-items: center;
   gap: 8px;
 }
-
-.loading-spinner::before {
-  content: '';
+.spinner {
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
@@ -215,6 +213,7 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+
 
 @keyframes spin {
   to {

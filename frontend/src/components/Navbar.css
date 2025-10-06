@@ -229,3 +229,151 @@
     padding: 0.8rem 1.5rem;
   }
 }
+/* ---------- Auth Buttons (Login & Sign Up) ---------- */
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.auth-btn {
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.6rem;
+  border: 2px solid white;
+  border-radius: 30px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-btn.login:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.auth-btn.register {
+  background: white;
+  color: #047122;
+  border: none;
+}
+
+.auth-btn.register:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #065d1f;
+  transform: translateY(-2px);
+}
+
+/* ---------- User Menu ---------- */
+.user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.user-button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 0.6rem 1.4rem;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+}
+
+.user-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.user-avatar {
+  font-size: 1.2rem;
+}
+
+.user-name {
+  font-size: 0.95rem;
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* ---------- Dropdown ---------- */
+.user-dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+  z-index: 100;
+  animation: dropdownFade 0.25s ease;
+}
+
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.user-info {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.user-email {
+  display: block;
+  font-weight: 600;
+  color: #047122;
+  font-size: 0.95rem;
+}
+
+.user-role {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.2rem;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.dropdown-item {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0.8rem 1rem;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.95rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(4, 113, 34, 0.1);
+  color: #047122;
+}
+
+.dropdown-item.logout {
+  color: #d9534f;
+}
+
+.dropdown-item.logout:hover {
+  background: rgba(217, 83, 79, 0.1);
+}
