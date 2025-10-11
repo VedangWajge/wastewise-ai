@@ -67,7 +67,7 @@ class UserRegistrationSchema(Schema):
     pincode = fields.Str(required=False)
     city = fields.Str(required=False, validate=validate.Length(max=50))
     state = fields.Str(required=False, validate=validate.Length(max=50))
-    role = fields.Str(missing='user', validate=validate.OneOf(['user', 'service_provider']))
+    role = fields.Str(load_default='user', validate=validate.OneOf(['user', 'service_provider']))
     terms_accepted = fields.Bool(required=True, validate=validate.Equal(True))
 
     @pre_load
@@ -93,7 +93,7 @@ class UserRegistrationSchema(Schema):
 class UserLoginSchema(Schema):
     email = fields.Email(required=True)
     password = fields.Str(required=True, validate=validate.Length(min=1))
-    remember_me = fields.Bool(missing=False)
+    remember_me = fields.Bool(load_default=False)
 
 # User Profile Update Schema
 class UserProfileUpdateSchema(Schema):
@@ -191,7 +191,7 @@ class PaymentSchema(Schema):
     booking_id = fields.Str(required=True)
     amount = fields.Float(required=True, validate=validate.Range(min=1))
     payment_method = fields.Str(required=True, validate=validate.OneOf(['card', 'upi', 'netbanking', 'wallet']))
-    currency = fields.Str(missing='INR', validate=validate.OneOf(['INR']))
+    currency = fields.Str(load_default='INR', validate=validate.OneOf(['INR']))
 
 # Validation helper functions
 def validate_json_request(schema_class):
