@@ -1,0 +1,164 @@
+GIT COMMANDS GUIDE - Pulling from GitHub and Merging Branches
+================================================================
+
+SCENARIO: Pull latest changes from GitHub's ai-model branch into your local ai-model branch, then merge into main
+-------------------------------------------------------------------------------------------------------------------
+
+STEP 1: Ensure you're on the ai-model branch
+---------------------------------------------
+Command: git branch
+Explanation: Shows all local branches and highlights the current branch with an asterisk (*)
+Expected Output: * ai-model (if you're already on it)
+
+Command: git checkout ai-model
+Explanation: Switches to the ai-model branch if you're not already on it
+
+
+STEP 2: Pull latest changes from GitHub's ai-model branch
+----------------------------------------------------------
+Command: git pull origin ai-model
+Explanation: Fetches and merges changes from the remote 'origin' repository's ai-model branch into your current local ai-model branch
+- 'git pull' = 'git fetch' (download changes) + 'git merge' (integrate changes)
+- 'origin' is the default name for your remote GitHub repository
+- 'ai-model' is the branch name on GitHub you want to pull from
+
+Alternative (if you want more control):
+Command: git fetch origin
+Explanation: Downloads all changes from GitHub without merging them yet
+
+Command: git merge origin/ai-model
+Explanation: Merges the downloaded changes from origin/ai-model into your current local branch
+
+
+STEP 3: Resolve any merge conflicts (if they occur)
+----------------------------------------------------
+If you see "CONFLICT" messages during the pull/merge:
+
+Command: git status
+Explanation: Shows which files have conflicts
+
+Steps to resolve:
+1. Open the conflicting files in your editor
+2. Look for conflict markers: <<<<<<<, =======, >>>>>>>
+3. Manually edit the files to keep the changes you want
+4. Remove the conflict markers
+
+Command: git add <filename>
+Explanation: After resolving conflicts in a file, stage it for commit
+
+Command: git commit -m "Resolved merge conflicts from ai-model pull"
+Explanation: Completes the merge by creating a commit with resolved conflicts
+
+
+STEP 4: Verify everything is up to date
+----------------------------------------
+Command: git status
+Explanation: Should show "Your branch is up to date with 'origin/ai-model'" and no uncommitted changes
+
+Command: git log --oneline -5
+Explanation: Shows the last 5 commits to verify the pull was successful
+
+
+STEP 5: Switch to the main branch
+----------------------------------
+Command: git checkout main
+Explanation: Switches from ai-model to the main branch
+
+
+STEP 6: Update main branch from GitHub (recommended)
+-----------------------------------------------------
+Command: git pull origin main
+Explanation: Ensures your local main branch has the latest changes from GitHub before merging
+
+
+STEP 7: Merge ai-model into main
+---------------------------------
+Command: git merge ai-model
+Explanation: Merges all changes from the ai-model branch into the main branch
+- This creates a merge commit in main that includes all ai-model changes
+- If there are conflicts, follow the same conflict resolution steps as STEP 3
+
+
+STEP 8: Review the merge
+-------------------------
+Command: git log --oneline --graph -10
+Explanation: Shows a visual graph of recent commits to verify the merge
+
+Command: git diff origin/main
+Explanation: Shows all differences between your local main and GitHub's main branch
+
+
+STEP 9: Push the merged main branch to GitHub
+----------------------------------------------
+Command: git push origin main
+Explanation: Uploads your local main branch (with merged ai-model changes) to GitHub
+- This makes your changes available to other team members
+- After this, GitHub's main branch will include all ai-model changes
+
+
+STEP 10: Clean up (optional)
+-----------------------------
+If you're done with the ai-model branch and want to delete it:
+
+Command: git branch -d ai-model
+Explanation: Deletes the local ai-model branch (only works if it's fully merged)
+
+Command: git branch -D ai-model
+Explanation: Force deletes the local ai-model branch (even if not fully merged)
+
+Command: git push origin --delete ai-model
+Explanation: Deletes the ai-model branch from GitHub
+
+
+USEFUL TROUBLESHOOTING COMMANDS
+================================
+
+View remote repository information:
+Command: git remote -v
+Explanation: Shows the URLs of your remote repositories
+
+Undo uncommitted changes:
+Command: git checkout -- <filename>
+Explanation: Discards changes in a specific file
+
+Command: git reset --hard
+Explanation: Discards ALL uncommitted changes (USE WITH CAUTION!)
+
+Undo last commit (keep changes):
+Command: git reset --soft HEAD~1
+Explanation: Removes the last commit but keeps the changes staged
+
+Undo last commit (discard changes):
+Command: git reset --hard HEAD~1
+Explanation: Removes the last commit and discards all changes (USE WITH CAUTION!)
+
+View detailed commit history:
+Command: git log --graph --oneline --all
+Explanation: Shows a visual graph of all branches and commits
+
+Check which files changed:
+Command: git diff --name-only
+Explanation: Lists only the filenames that have changes
+
+
+QUICK REFERENCE - YOUR SPECIFIC WORKFLOW
+=========================================
+
+1. git checkout ai-model              # Switch to ai-model branch
+2. git pull origin ai-model           # Pull latest from GitHub ai-model
+3. [Resolve conflicts if any]
+4. git checkout main                  # Switch to main branch
+5. git pull origin main               # Update local main from GitHub
+6. git merge ai-model                 # Merge ai-model into main
+7. [Resolve conflicts if any]
+8. git push origin main               # Push merged main to GitHub
+
+
+SAFETY TIPS
+===========
+- Always commit or stash your work before pulling or merging
+- Review changes with 'git status' and 'git diff' before committing
+- Use 'git log' to understand the commit history
+- Create backups of important branches before major operations
+- Test merged code before pushing to main
+- Communicate with your team before pushing to main/master branches
