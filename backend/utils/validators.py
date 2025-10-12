@@ -67,7 +67,6 @@ class UserRegistrationSchema(Schema):
     pincode = fields.Str(required=False)
     city = fields.Str(required=False, validate=validate.Length(max=50))
     state = fields.Str(required=False, validate=validate.Length(max=50))
-    #role = fields.Str(missing='user', validate=validate.OneOf(['user', 'service_provider']))
     role = fields.Str(load_default='user', validate=validate.OneOf(['user', 'service_provider']))
     terms_accepted = fields.Bool(required=True, validate=validate.Equal(True))
 
@@ -94,9 +93,7 @@ class UserRegistrationSchema(Schema):
 class UserLoginSchema(Schema):
     email = fields.Email(required=True)
     password = fields.Str(required=True, validate=validate.Length(min=1))
-    # remember_me = fields.Bool(missing=False)
     remember_me = fields.Bool(load_default=False)
-
 
 # User Profile Update Schema
 class UserProfileUpdateSchema(Schema):
