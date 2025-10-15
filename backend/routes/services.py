@@ -359,13 +359,13 @@ def search_service_providers():
 
         # Apply filters
         if waste_type:
-            providers = [sp for sp in providers if waste_type in sp.get('speciality', [])]
+            providers = [sp for sp in providers if waste_type.lower() in [s.lower() for s in sp.get('speciality', [])]]
 
         if city:
-            providers = [sp for sp in providers if sp['location']['city'].lower() == city.lower()]
+            providers = [sp for sp in providers if sp.get('location', {}).get('city', '').lower() == city.lower()]
 
         if service_type:
-            providers = [sp for sp in providers if sp['type'].lower() == service_type.lower()]
+            providers = [sp for sp in providers if sp.get('type', '').lower() == service_type.lower()]
 
         if min_rating:
             providers = [sp for sp in providers if sp.get('rating', 0) >= min_rating]

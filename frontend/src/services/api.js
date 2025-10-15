@@ -368,15 +368,15 @@ class ApiService {
   }
 
   async getPersonalAnalytics(period = 'month', includeComparisons = false) {
-    const queryParams = new URLSearchParams({ period, include_comparisons: includeComparisons });
-    const response = await this.makeRequest(`/analytics/waste-stats?${queryParams}`);
+    const queryParams = new URLSearchParams({ period, predictions: includeComparisons });
+    const response = await this.makeRequest(`/analytics/personal?${queryParams}`);
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to fetch analytics');
     return data;
   }
 
   async getAIInsights() {
-    const response = await this.makeRequest('/analytics/environmental-impact');
+    const response = await this.makeRequest('/analytics/insights?type=personal');
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to fetch AI insights');
     return data;

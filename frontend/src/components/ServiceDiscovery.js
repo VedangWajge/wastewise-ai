@@ -21,7 +21,8 @@ const ServiceDiscovery = ({ wasteType, onServiceSelect, onBack }) => {
     try {
       setLoading(true);
       const response = await apiService.findNearbyServices(wasteType);
-      setServices(response.services || []);
+      console.log('Services API Response:', response); // Debug log
+      setServices(response.providers || []); // Changed from services to providers
       setError(null);
     } catch (err) {
       setError('Failed to load services. Please try again.');
