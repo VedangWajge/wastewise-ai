@@ -6,6 +6,7 @@ import json
 
 from middleware.auth import AuthMiddleware
 from models.demo_data import demo_data
+from models.database import DatabaseManager
 
 # Create blueprint
 analytics_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
@@ -89,12 +90,38 @@ class AnalyticsManager:
 
 analytics_manager = AnalyticsManager()
 
+@analytics_bp.route('/dashboard', methods=['GET'])
+@AuthMiddleware.jwt_required
+def get_dashboard_statistics():
+    """Get dashboard statistics for current user"""
+    try:
+        current_user_id = get_jwt_identity()
+
+        # Use DatabaseManager to get statistics from SQLite database
+        db = DatabaseManager()
+        stats = db.get_statistics()
+
+        return jsonify({
+            'success': True,
+            'total_classifications': stats['total_classifications'],
+            'recycling_rate': stats['recycling_rate'],
+            'waste_breakdown': stats['waste_breakdown'],
+            'environmental_impact': stats['environmental_impact']
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve dashboard statistics',
+            'message': str(e)
+        }), 500
+
 @analytics_bp.route('/personal', methods=['GET'])
 @AuthMiddleware.jwt_required
 def get_personal_analytics():
     """Get personal analytics for current user"""
     try:
         current_user_id = get_jwt_identity()
+        db = DatabaseManager()
 
         # Query parameters
         period = request.args.get('period', 'month')  # week, month, quarter, year
@@ -115,13 +142,11 @@ def get_personal_analytics():
             start_date = now - timedelta(days=30)
             period_days = 30
 
-        # Get user's activity data
-        user_classifications = [
-            c for c in demo_data.classifications
-            if current_user_id in c.get('filename', '') and
-            datetime.fromisoformat(c.get('created_at', now.isoformat())) >= start_date
-        ]
+        # Get user's classification stats from database
+        user_stats = db.get_user_classification_stats(current_user_id, start_date.isoformat())
+        waste_breakdown = user_stats['waste_breakdown']
 
+        # Get user bookings from demo_data (will be moved to DB later)
         user_bookings = [
             b for b in demo_data.bookings
             if b.get('user_id') == current_user_id and
@@ -130,56 +155,31 @@ def get_personal_analytics():
 
         completed_bookings = [b for b in user_bookings if b.get('status') == 'completed']
 
-        # Calculate waste breakdown
-        waste_breakdown = analytics_manager.get_waste_breakdown_by_user(current_user_id)
-
         # Calculate environmental impact
         environmental_impact = analytics_manager.calculate_environmental_impact(waste_breakdown, period_days)
 
-        # Generate activity trends
-        days_in_period = min(period_days, 30)  # Limit to 30 data points for chart
-        daily_classifications = []
-        daily_bookings = []
+        # Get user points from database
+        points_data = db.get_user_points(current_user_id)
+        total_points = points_data['total_points']
 
-        for i in range(days_in_period):
-            day = start_date + timedelta(days=i)
-            day_classifications = len([
-                c for c in user_classifications
-                if datetime.fromisoformat(c.get('created_at', now.isoformat())).date() == day.date()
-            ])
-            day_bookings = len([
-                b for b in user_bookings
-                if datetime.fromisoformat(b.get('created_at', now.isoformat())).date() == day.date()
-            ])
-
-            daily_classifications.append({
-                'date': day.strftime('%Y-%m-%d'),
-                'count': day_classifications
-            })
-            daily_bookings.append({
-                'date': day.strftime('%Y-%m-%d'),
-                'count': day_bookings
-            })
-
-        # Calculate achievements and milestones
-        total_points = 0
-        if hasattr(demo_data, 'user_points'):
-            total_points = demo_data.user_points.get(current_user_id, 0)
+        # Get user badges from database
+        user_badges = db.get_user_badges(current_user_id)
 
         achievements = {
-            'total_classifications': len([c for c in demo_data.classifications if current_user_id in c.get('filename', '')]),
+            'total_classifications': user_stats['total_classifications'],
             'total_bookings': len([b for b in demo_data.bookings if b.get('user_id') == current_user_id]),
             'completed_bookings': len([b for b in demo_data.bookings if b.get('user_id') == current_user_id and b.get('status') == 'completed']),
             'total_points': total_points,
+            'total_badges': len(user_badges),
             'carbon_footprint_reduction': environmental_impact['co2_saved_kg'],
-            'consistency_score': min(100, len(daily_classifications) / period_days * 100)
+            'consistency_score': min(100, user_stats['total_classifications'] / max(period_days, 1) * 100)
         }
 
         # Generate predictions if requested
         predictions = {}
         if include_predictions:
             predictions = {
-                'next_month_classifications': max(5, len(user_classifications) * 1.1),
+                'next_month_classifications': max(5, user_stats['total_classifications'] * 1.1),
                 'next_month_bookings': max(1, len(user_bookings) * 1.1),
                 'projected_co2_savings': environmental_impact['co2_saved_kg'] * 1.2,
                 'goal_achievement_probability': random.randint(65, 90)
@@ -192,23 +192,20 @@ def get_personal_analytics():
                 'end': now.isoformat()
             },
             'summary': {
-                'classifications_count': len(user_classifications),
+                'classifications_count': user_stats['total_classifications'],
                 'bookings_count': len(user_bookings),
                 'completed_bookings': len(completed_bookings),
                 'success_rate': round((len(completed_bookings) / max(len(user_bookings), 1)) * 100, 1)
             },
             'waste_breakdown': waste_breakdown,
             'environmental_impact': environmental_impact,
-            'activity_trends': {
-                'classifications': daily_classifications,
-                'bookings': daily_bookings
-            },
             'achievements': achievements,
             'predictions': predictions if include_predictions else None,
             'insights': [
-                f"You've classified {len(user_classifications)} items this {period}",
+                f"You've classified {user_stats['total_classifications']} items this {period}",
                 f"Your environmental impact saved {environmental_impact['co2_saved_kg']} kg of CO2",
-                f"You're {achievements['consistency_score']:.0f}% consistent with daily usage"
+                f"You're {achievements['consistency_score']:.0f}% consistent with daily usage",
+                f"You've earned {len(user_badges)} badges"
             ]
         }
 

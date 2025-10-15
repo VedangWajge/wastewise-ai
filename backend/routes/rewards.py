@@ -5,6 +5,7 @@ import uuid
 
 from middleware.auth import AuthMiddleware
 from models.demo_data import demo_data
+from models.database import DatabaseManager
 
 # Create blueprint
 rewards_bp = Blueprint('rewards', __name__, url_prefix='/api/rewards')
@@ -127,107 +128,73 @@ class RewardsManager:
 
     def get_user_points(self, user_id):
         """Get user's current points"""
-        if not hasattr(demo_data, 'user_points'):
-            demo_data.user_points = {}
-        return demo_data.user_points.get(user_id, 0)
+        db = DatabaseManager()
+        points_data = db.get_user_points(user_id)
+        return points_data['total_points']
 
     def add_points(self, user_id, points, reason, reference_id=None):
         """Add points to user account"""
-        if not hasattr(demo_data, 'user_points'):
-            demo_data.user_points = {}
-        if not hasattr(demo_data, 'point_transactions'):
-            demo_data.point_transactions = []
-
-        current_points = self.get_user_points(user_id)
-        new_points = current_points + points
-
-        demo_data.user_points[user_id] = new_points
-
-        # Create transaction record
-        transaction = {
-            'id': str(uuid.uuid4()),
-            'user_id': user_id,
-            'points': points,
-            'type': 'earned',
-            'reason': reason,
-            'reference_id': reference_id,
-            'balance_after': new_points,
-            'created_at': datetime.now().isoformat()
-        }
-        demo_data.point_transactions.append(transaction)
+        db = DatabaseManager()
+        new_total = db.add_points(user_id, points, 'earned', reason, reference_id)
 
         # Check for badge achievements
         self.check_badge_achievements(user_id)
 
-        return new_points
+        return new_total
 
     def deduct_points(self, user_id, points, reason, reference_id=None):
         """Deduct points from user account"""
-        if not hasattr(demo_data, 'user_points'):
-            demo_data.user_points = {}
-        if not hasattr(demo_data, 'point_transactions'):
-            demo_data.point_transactions = []
-
-        current_points = self.get_user_points(user_id)
-        if current_points < points:
-            return None  # Insufficient points
-
-        new_points = current_points - points
-        demo_data.user_points[user_id] = new_points
-
-        # Create transaction record
-        transaction = {
-            'id': str(uuid.uuid4()),
-            'user_id': user_id,
-            'points': -points,
-            'type': 'spent',
-            'reason': reason,
-            'reference_id': reference_id,
-            'balance_after': new_points,
-            'created_at': datetime.now().isoformat()
-        }
-        demo_data.point_transactions.append(transaction)
-
-        return new_points
+        db = DatabaseManager()
+        new_total = db.deduct_points(user_id, points, 'spent', reason, reference_id)
+        return new_total
 
     def get_user_badges(self, user_id):
         """Get user's earned badges"""
-        if not hasattr(demo_data, 'user_badges'):
-            demo_data.user_badges = {}
-        return demo_data.user_badges.get(user_id, [])
+        db = DatabaseManager()
+        return db.get_user_badges(user_id)
 
     def award_badge(self, user_id, badge_id):
         """Award a badge to user"""
-        if not hasattr(demo_data, 'user_badges'):
-            demo_data.user_badges = {}
+        db = DatabaseManager()
 
         user_badges = self.get_user_badges(user_id)
-        if badge_id not in [b['id'] for b in user_badges]:
+        if badge_id not in [b['badge_id'] for b in user_badges]:
             badge_info = self.badges.get(badge_id)
             if badge_info:
-                badge_record = {
-                    'id': badge_id,
-                    'name': badge_info['name'],
-                    'description': badge_info['description'],
-                    'icon': badge_info['icon'],
-                    'earned_at': datetime.now().isoformat(),
-                    'points_awarded': badge_info['points']
-                }
+                # Add badge to database
+                badge_record_id = db.add_user_badge(
+                    user_id,
+                    badge_id,
+                    badge_info['name'],
+                    badge_info['description'],
+                    badge_info['icon'],
+                    badge_info['points']
+                )
 
-                if user_id not in demo_data.user_badges:
-                    demo_data.user_badges[user_id] = []
-                demo_data.user_badges[user_id].append(badge_record)
+                if badge_record_id:
+                    # Award points for the badge
+                    self.add_points(user_id, badge_info['points'], f'Badge earned: {badge_info["name"]}')
 
-                # Award points for the badge
-                self.add_points(user_id, badge_info['points'], f'Badge earned: {badge_info["name"]}')
-
-                return badge_record
+                    return {
+                        'id': badge_record_id,
+                        'badge_id': badge_id,
+                        'name': badge_info['name'],
+                        'description': badge_info['description'],
+                        'icon': badge_info['icon'],
+                        'points_awarded': badge_info['points'],
+                        'earned_at': datetime.now().isoformat()
+                    }
         return None
 
     def check_badge_achievements(self, user_id):
         """Check and award badges based on user activity"""
-        # Get user activity data
-        user_classifications = len([c for c in demo_data.classifications if user_id in c.get('filename', '')])
+        db = DatabaseManager()
+
+        # Get user activity data from database
+        user_stats = db.get_user_classification_stats(user_id)
+        user_classifications = user_stats['total_classifications']
+
+        # Get bookings from demo_data (will be moved to DB later)
         user_bookings = [b for b in demo_data.bookings if b.get('user_id') == user_id]
         completed_bookings = [b for b in user_bookings if b.get('status') == 'completed']
         user_reviews = len([b for b in user_bookings if b.get('user_rating')])
@@ -263,24 +230,20 @@ def get_user_points():
     """Get user's current points and recent transactions"""
     try:
         current_user_id = get_jwt_identity()
+        db = DatabaseManager()
 
-        current_points = rewards_manager.get_user_points(current_user_id)
+        # Get points data from database
+        points_data = db.get_user_points(current_user_id)
+        current_points = points_data['total_points']
 
-        # Get recent transactions
-        if not hasattr(demo_data, 'point_transactions'):
-            demo_data.point_transactions = []
-
-        user_transactions = [
-            t for t in demo_data.point_transactions
-            if t['user_id'] == current_user_id
-        ][-10:]  # Last 10 transactions
+        # Get recent transactions from database
+        user_transactions = db.get_point_transactions(current_user_id, limit=10)
 
         # Calculate weekly progress
         week_start = datetime.now() - timedelta(days=7)
         weekly_points = sum(
-            t['points'] for t in demo_data.point_transactions
-            if t['user_id'] == current_user_id and
-            datetime.fromisoformat(t['created_at']) >= week_start and
+            t['points'] for t in user_transactions
+            if datetime.fromisoformat(t['created_at']) >= week_start and
             t['points'] > 0
         )
 
@@ -289,8 +252,8 @@ def get_user_points():
             'points': {
                 'current_balance': current_points,
                 'weekly_earned': weekly_points,
-                'total_earned': sum(t['points'] for t in demo_data.point_transactions if t['user_id'] == current_user_id and t['points'] > 0),
-                'total_spent': abs(sum(t['points'] for t in demo_data.point_transactions if t['user_id'] == current_user_id and t['points'] < 0))
+                'total_earned': points_data['points_earned'],
+                'total_spent': points_data['points_spent']
             },
             'recent_transactions': user_transactions,
             'next_milestone': {
@@ -311,23 +274,31 @@ def get_user_badges():
     """Get user's earned badges and available badges"""
     try:
         current_user_id = get_jwt_identity()
+        db = DatabaseManager()
 
-        earned_badges = rewards_manager.get_user_badges(current_user_id)
+        # Get earned badges from database
+        earned_badges = db.get_user_badges(current_user_id)
         available_badges = []
+
+        # Get user stats for badge progress calculation
+        user_stats = db.get_user_classification_stats(current_user_id)
+        user_classifications = user_stats['total_classifications']
+
+        # Get bookings from demo_data for badge progress
+        user_bookings = [b for b in demo_data.bookings if b.get('user_id') == current_user_id]
+        completed_bookings = len([b for b in user_bookings if b.get('status') == 'completed'])
+        user_reviews = len([b for b in user_bookings if b.get('user_rating')])
 
         # Check progress for unearned badges
         for badge_id, badge_info in rewards_manager.badges.items():
-            if badge_id not in [b['id'] for b in earned_badges]:
+            if badge_id not in [b['badge_id'] for b in earned_badges]:
                 # Calculate progress
                 progress = 0
                 if badge_info['requirement']['type'] == 'classification':
-                    user_classifications = len([c for c in demo_data.classifications if current_user_id in c.get('filename', '')])
                     progress = min(100, (user_classifications / badge_info['requirement']['count']) * 100)
                 elif badge_info['requirement']['type'] == 'booking':
-                    completed_bookings = len([b for b in demo_data.bookings if b.get('user_id') == current_user_id and b.get('status') == 'completed'])
                     progress = min(100, (completed_bookings / badge_info['requirement']['count']) * 100)
                 elif badge_info['requirement']['type'] == 'review':
-                    user_reviews = len([b for b in demo_data.bookings if b.get('user_id') == current_user_id and b.get('user_rating')])
                     progress = min(100, (user_reviews / badge_info['requirement']['count']) * 100)
 
                 available_badges.append({
@@ -361,80 +332,33 @@ def get_leaderboard():
     """Get community leaderboard"""
     try:
         current_user_id = get_jwt_identity()
+        db = DatabaseManager()
 
         # Query parameters
         period = request.args.get('period', 'weekly')  # weekly, monthly, all-time
         category = request.args.get('category', 'points')  # points, classifications, bookings
 
-        if not hasattr(demo_data, 'user_points'):
-            demo_data.user_points = {}
+        # Get leaderboard data from database
+        leaderboard_data = db.get_leaderboard_data(metric=category, limit=50)
 
-        # Calculate period-based filter
-        now = datetime.now()
-        if period == 'weekly':
-            start_date = now - timedelta(days=7)
-        elif period == 'monthly':
-            start_date = now - timedelta(days=30)
-        else:
-            start_date = None
-
-        # Get leaderboard data
-        leaderboard = []
-        for user_id, points in demo_data.user_points.items():
-            if category == 'points':
-                if period == 'all-time':
-                    score = points
-                else:
-                    # Calculate points earned in period
-                    period_transactions = [
-                        t for t in demo_data.point_transactions
-                        if t['user_id'] == user_id and
-                        t['points'] > 0 and
-                        (start_date is None or datetime.fromisoformat(t['created_at']) >= start_date)
-                    ]
-                    score = sum(t['points'] for t in period_transactions)
-            elif category == 'classifications':
-                user_classifications = [c for c in demo_data.classifications if user_id in c.get('filename', '')]
-                if start_date:
-                    user_classifications = [c for c in user_classifications if datetime.fromisoformat(c.get('created_at', now.isoformat())) >= start_date]
-                score = len(user_classifications)
-            elif category == 'bookings':
-                user_bookings = [b for b in demo_data.bookings if b.get('user_id') == user_id and b.get('status') == 'completed']
-                if start_date:
-                    user_bookings = [b for b in user_bookings if datetime.fromisoformat(b.get('created_at', now.isoformat())) >= start_date]
-                score = len(user_bookings)
-
-            # Get user info (mock)
-            user_badges = rewards_manager.get_user_badges(user_id)
-            leaderboard.append({
-                'user_id': user_id,
-                'display_name': f'User {user_id[:8]}',  # Would come from user profile
-                'score': score,
-                'badge_count': len(user_badges),
-                'avatar_url': f'/avatars/user_{hash(user_id) % 10}.png',
-                'rank': 0  # Will be set after sorting
-            })
-
-        # Sort by score
-        leaderboard.sort(key=lambda x: x['score'], reverse=True)
-
-        # Assign ranks
-        for i, entry in enumerate(leaderboard):
-            entry['rank'] = i + 1
+        # Enhance leaderboard with additional info
+        for entry in leaderboard_data:
+            user_id = entry['user_id']
+            user_badges = db.get_user_badges(user_id)
+            entry['display_name'] = f'User {user_id[:8]}'  # Would come from user profile
+            entry['badge_count'] = len(user_badges)
+            entry['avatar_url'] = f'/avatars/user_{hash(user_id) % 10}.png'
 
         # Find current user's position
-        current_user_rank = next((entry for entry in leaderboard if entry['user_id'] == current_user_id), None)
-
-        # Limit to top 50
-        top_leaderboard = leaderboard[:50]
+        current_user_rank = next((entry for entry in leaderboard_data if entry['user_id'] == current_user_id), None)
 
         return jsonify({
             'success': True,
-            'leaderboard': top_leaderboard,
+            'leaderboard': leaderboard_data,
             'current_user_rank': current_user_rank,
             'period': period,
             'category': category,
-            'total_participants': len(leaderboard)
+            'total_participants': len(leaderboard_data)
         }), 200
 
     except Exception as e:
@@ -544,8 +468,19 @@ def redeem_reward():
             reward_id
         )
 
-        # Create redemption record
-        redemption_id = str(uuid.uuid4())
+        # Create redemption record in database
+        db = DatabaseManager()
+        estimated_delivery = (datetime.now() + timedelta(days=7)).isoformat() if reward['category'] in ['merchandise', 'utility'] else None
+
+        redemption_id = db.create_redemption(
+            current_user_id,
+            reward_id,
+            reward['name'],
+            quantity,
+            total_points_needed,
+            estimated_delivery
+        )
+
         redemption = {
             'id': redemption_id,
             'user_id': current_user_id,
@@ -555,13 +490,9 @@ def redeem_reward():
             'points_spent': total_points_needed,
             'status': 'processing',
             'redeemed_at': datetime.now().isoformat(),
-            'estimated_delivery': (datetime.now() + timedelta(days=7)).isoformat() if reward['category'] in ['merchandise', 'utility'] else None,
+            'estimated_delivery': estimated_delivery,
             'tracking_info': None
         }
-
-        if not hasattr(demo_data, 'redemptions'):
-            demo_data.redemptions = []
-        demo_data.redemptions.append(redemption)
 
         # Update reward quantity
         if reward['limited_quantity']:
@@ -591,18 +522,10 @@ def get_user_redemptions():
     """Get user's redemption history"""
     try:
         current_user_id = get_jwt_identity()
+        db = DatabaseManager()
 
-        if not hasattr(demo_data, 'redemptions'):
-            demo_data.redemptions = []
-
-        # Get user's redemptions
-        user_redemptions = [
-            r for r in demo_data.redemptions
-            if r['user_id'] == current_user_id
-        ]
-
-        # Sort by redemption date (newest first)
-        user_redemptions.sort(key=lambda x: x['redeemed_at'], reverse=True)
+        # Get user's redemptions from database
+        user_redemptions = db.get_user_redemptions(current_user_id)
 
         # Add estimated delivery status
         for redemption in user_redemptions:
