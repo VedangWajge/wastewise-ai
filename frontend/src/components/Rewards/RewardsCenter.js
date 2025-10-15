@@ -39,11 +39,11 @@ const RewardsCenter = () => {
       }
 
       if (badgesResponse.success) {
-        setUserBadges(badgesResponse.badges);
+        setUserBadges(badgesResponse.earned_badges || []);
       }
 
       if (challengesResponse.success) {
-        setChallenges(challengesResponse.challenges);
+        setChallenges(challengesResponse.challenges || []);
       }
     } catch (error) {
       console.error('Error fetching rewards data:', error);

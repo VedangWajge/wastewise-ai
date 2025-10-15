@@ -154,36 +154,243 @@ class ApiService {
 
   // === WASTE CLASSIFICATION ===
   async classifyWaste(imageFile) {
-    // Prepare multipart form data
     const formData = new FormData();
     formData.append('image', imageFile);
 
-    // Only set Auth header; let the browser add Content-Type with boundary
     const headers = {};
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-    // Send request
     const response = await fetch(`${API_BASE_URL}/classify`, {
       method: 'POST',
       headers,
       body: formData
     });
 
-    // Handle errors
     if (!response.ok) {
       const err = await response.json();
       throw new Error(err.error || 'Classification failed');
     }
 
-    // Parse result
     return await response.json();
   }
 
-  // ---- The rest of your service methods ----
-  // getWasteTypeInfo, getRecentClassifications, booking, payments, rewards, analytics...
-  // ... all unchanged ...
+  // === SERVICE PROVIDERS ===
+  async findNearbyServices(wasteType, filters = {}) {
+    const queryParams = new URLSearchParams({
+      waste_type: wasteType,
+      ...filters
+    });
+    const response = await this.makeRequest(`/services/search?${queryParams}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch services');
+    return data;
+  }
+
+  async getServiceDetails(serviceId) {
+    const response = await this.makeRequest(`/services/${serviceId}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch service details');
+    return data;
+  }
+
+  // === BOOKINGS ===
+  async createBooking(bookingData) {
+    const response = await this.makeRequest('/bookings/create', {
+      method: 'POST',
+      body: JSON.stringify(bookingData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Booking failed');
+    return data;
+  }
+
+  async getUserBookings(status = null) {
+    const url = status ? `/bookings/my-bookings?status=${status}` : '/bookings/my-bookings';
+    const response = await this.makeRequest(url);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch bookings');
+    return data;
+  }
+
+  async getBookingDetails(bookingId) {
+    const response = await this.makeRequest(`/bookings/${bookingId}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch booking details');
+    return data;
+  }
+
+  async cancelBooking(bookingId, reason) {
+    const response = await this.makeRequest(`/bookings/${bookingId}/cancel`, {
+      method: 'POST',
+      body: JSON.stringify({ reason })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to cancel booking');
+    return data;
+  }
+
+  async rescheduleBooking(bookingId, newDate, newTimeSlot) {
+    const response = await this.makeRequest(`/bookings/${bookingId}/reschedule`, {
+      method: 'POST',
+      body: JSON.stringify({
+        new_scheduled_date: newDate,
+        new_time_slot: newTimeSlot
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to reschedule booking');
+    return data;
+  }
+
+  async rateBooking(bookingId, ratingData) {
+    const response = await this.makeRequest(`/bookings/${bookingId}/rate`, {
+      method: 'POST',
+      body: JSON.stringify(ratingData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to submit rating');
+    return data;
+  }
+
+  async trackBooking(bookingId) {
+    const response = await this.makeRequest(`/bookings/${bookingId}/track`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to track booking');
+    return data;
+  }
+
+  // === REWARDS ===
+  async getUserPoints() {
+    const response = await this.makeRequest('/rewards/points');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch points');
+    return data;
+  }
+
+  async getUserBadges() {
+    const response = await this.makeRequest('/rewards/badges');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch badges');
+    return data;
+  }
+
+  async getChallenges() {
+    const response = await this.makeRequest('/rewards/challenges');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch challenges');
+    return data;
+  }
+
+  async getUserChallenges() {
+    const response = await this.makeRequest('/rewards/my-challenges');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch user challenges');
+    return data;
+  }
+
+  async joinChallenge(challengeId) {
+    const response = await this.makeRequest(`/rewards/challenges/${challengeId}/join`, {
+      method: 'POST'
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to join challenge');
+    return data;
+  }
+
+  async getRewardCatalog() {
+    const response = await this.makeRequest('/rewards/catalog');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch reward catalog');
+    return data;
+  }
+
+  async redeemReward(rewardId, quantity = 1) {
+    const response = await this.makeRequest('/rewards/redeem', {
+      method: 'POST',
+      body: JSON.stringify({ reward_id: rewardId, points_to_redeem: quantity })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to redeem reward');
+    return data;
+  }
+
+  async getLeaderboard(filters = {}) {
+    const queryParams = new URLSearchParams(filters);
+    const response = await this.makeRequest(`/rewards/leaderboard?${queryParams}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch leaderboard');
+    return data;
+  }
+
+  // === PAYMENTS ===
+  async getPaymentMethods() {
+    const response = await this.makeRequest('/payments/methods');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch payment methods');
+    return data;
+  }
+
+  async getPaymentHistory() {
+    const response = await this.makeRequest('/payments/history');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch payment history');
+    return data;
+  }
+
+  async initiatePayment(paymentData) {
+    const response = await this.makeRequest('/payments/initiate', {
+      method: 'POST',
+      body: JSON.stringify(paymentData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to initiate payment');
+    return data;
+  }
+
+  async verifyPayment(verificationData) {
+    const response = await this.makeRequest('/payments/verify', {
+      method: 'POST',
+      body: JSON.stringify(verificationData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to verify payment');
+    return data;
+  }
+
+  // === ANALYTICS ===
+  async getStatistics() {
+    const response = await this.makeRequest('/analytics/dashboard');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch statistics');
+    return data;
+  }
+
+  async getPersonalAnalytics(period = 'month', includeComparisons = false) {
+    const queryParams = new URLSearchParams({ period, include_comparisons: includeComparisons });
+    const response = await this.makeRequest(`/analytics/waste-stats?${queryParams}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch analytics');
+    return data;
+  }
+
+  async getAIInsights() {
+    const response = await this.makeRequest('/analytics/environmental-impact');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch AI insights');
+    return data;
+  }
+
+  async exportAnalyticsData(exportOptions) {
+    const response = await this.makeRequest('/analytics/export', {
+      method: 'POST',
+      body: JSON.stringify(exportOptions)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to export data');
+    return data;
+  }
 }
 
 const apiService = new ApiService();

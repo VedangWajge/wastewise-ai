@@ -8,6 +8,7 @@ class DemoDataGenerator:
         self.communities = self._generate_communities()
         self.bookings = self._generate_bookings()
         self.notifications = self._generate_notifications()
+        self.classifications = []  # Will be populated by classification endpoint
 
     def _generate_service_providers(self):
         providers = [
