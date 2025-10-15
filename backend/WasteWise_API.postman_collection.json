@@ -1,0 +1,869 @@
+{
+	"info": {
+		"_postman_id": "wastewise-api-collection-2025",
+		"name": "WasteWise API Collection",
+		"description": "Complete API collection for WasteWise - AI-Powered Waste Management Platform\n\n## Base URL\n`http://localhost:5000`\n\n## Authentication\nMost endpoints require JWT authentication. After login, use the `access_token` in the Authorization header:\n```\nAuthorization: Bearer <your_access_token>\n```\n\n## Features\n- User Authentication & Management\n- AI Waste Classification\n- Booking Management\n- Service Provider Operations\n- Rewards & Analytics\n- Admin Dashboard",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\",\n  \"full_name\": \"John Doe\",\n  \"phone\": \"+919876543210\",\n  \"terms_accepted\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"access_token\", jsonData.tokens.access_token);",
+									"    pm.environment.set(\"user_id\", jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"remember_me\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login and receive JWT tokens"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "me"]
+						},
+						"description": "Get current authenticated user information"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "profile"]
+						},
+						"description": "Get detailed user profile with statistics"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"full_name\": \"John Updated Doe\",\n  \"phone\": \"+919876543211\",\n  \"address\": \"123 Green Street, Mumbai\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "profile"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"current_password\": \"SecurePass123!\",\n  \"new_password\": \"NewSecurePass123!\",\n  \"confirm_password\": \"NewSecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "change-password"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AI Waste Classification",
+			"item": [
+				{
+					"name": "Classify Waste Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": [],
+									"description": "Upload waste image (jpg, png, jpeg)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/classify",
+							"host": ["{{base_url}}"],
+							"path": ["api", "classify"]
+						},
+						"description": "Upload an image to classify waste type using AI model.\n\n**Supported Categories:**\n- battery\n- biological\n- brown-glass\n- cardboard\n- clothes\n- green-glass\n- metal\n- paper\n- plastic\n- shoes\n- trash\n- white-glass\n\n**Response includes:**\n- Waste type classification\n- Confidence score\n- Disposal recommendations\n- Environmental impact information\n- Top 3 predictions\n\n**Authentication:** Optional (rewards given if authenticated)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"service_provider_id\": \"sp_1\",\n  \"waste_type\": \"plastic\",\n  \"quantity\": \"50 kg\",\n  \"pickup_address\": \"123 Green Street, Mumbai, Maharashtra 400001\",\n  \"scheduled_date\": \"2025-10-20T10:00:00\",\n  \"scheduled_time_slot\": \"10:00 AM - 12:00 PM\",\n  \"special_instructions\": \"Please call before arriving\",\n  \"contact_person\": \"John Doe\",\n  \"contact_phone\": \"+919876543210\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/create",
+							"host": ["{{base_url}}"],
+							"path": ["api", "bookings", "create"]
+						},
+						"description": "Create a new waste pickup booking"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/my-bookings?status=scheduled&limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["api", "bookings", "my-bookings"],
+							"query": [
+								{
+									"key": "status",
+									"value": "scheduled",
+									"description": "scheduled, in_progress, completed, cancelled"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/book_001",
+							"host": ["{{base_url}}"],
+							"path": ["api", "bookings", "book_001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Track Booking",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/book_001/track",
+							"host": ["{{base_url}}"],
+							"path": ["api", "bookings", "book_001", "track"]
+						},
+						"description": "Get real-time tracking information for a booking"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Schedule conflict - unable to be present\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/book_001/cancel",
+							"host": ["{{base_url}}"],
+							"path": ["api", "bookings", "book_001", "cancel"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reschedule Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"new_scheduled_date\": \"2025-10-22T14:00:00\",\n  \"new_time_slot\": \"2:00 PM - 4:00 PM\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/book_001/reschedule",
+							"host": ["{{base_url}}"],
+							"path": ["api", "bookings", "book_001", "reschedule"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Rate Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rating\": 5,\n  \"title\": \"Excellent service!\",\n  \"comment\": \"Very professional and punctual. Highly recommended.\",\n  \"service_quality\": 5,\n  \"punctuality\": 5,\n  \"cleanliness\": 5,\n  \"communication\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/book_001/rate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "bookings", "book_001", "rate"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Service Providers",
+			"item": [
+				{
+					"name": "Register Service Provider",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"business_name\": \"Green Recyclers Pvt Ltd\",\n  \"business_type\": \"Private\",\n  \"specialities\": [\"plastic\", \"metal\", \"paper\"],\n  \"license_number\": \"LIC-2025-12345\",\n  \"address\": \"456 Eco Street\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400050\",\n  \"contact_email\": \"contact@greenrecyclers.com\",\n  \"contact_phone\": \"+919123456789\",\n  \"operating_hours\": \"Mon-Sat: 9AM-6PM\",\n  \"capacity_per_day\": 500,\n  \"website_url\": \"https://greenrecyclers.com\",\n  \"description\": \"Professional waste management and recycling services\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/services/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "register"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Service Providers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/services/search?waste_type=plastic&city=Mumbai&min_rating=4.0&lat=19.0760&lng=72.8777&radius=10&sort_by=rating&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "search"],
+							"query": [
+								{
+									"key": "waste_type",
+									"value": "plastic"
+								},
+								{
+									"key": "city",
+									"value": "Mumbai"
+								},
+								{
+									"key": "min_rating",
+									"value": "4.0"
+								},
+								{
+									"key": "lat",
+									"value": "19.0760"
+								},
+								{
+									"key": "lng",
+									"value": "72.8777"
+								},
+								{
+									"key": "radius",
+									"value": "10"
+								},
+								{
+									"key": "sort_by",
+									"value": "rating",
+									"description": "rating, distance, price"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Search for service providers with various filters"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Provider Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/services/sp_1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "sp_1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Provider Reviews",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/services/sp_1/reviews?limit=10&offset=0&rating=5",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "sp_1", "reviews"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "rating",
+									"value": "5",
+									"description": "Filter by rating 1-5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Provider Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/services/my-profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "my-profile"]
+						},
+						"description": "Get service provider profile (requires service provider role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Provider Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Updated description\",\n  \"operating_hours\": \"Mon-Sun: 8AM-8PM\",\n  \"capacity\": 1000,\n  \"availability\": {\n    \"monday\": true,\n    \"tuesday\": true,\n    \"wednesday\": true,\n    \"thursday\": true,\n    \"friday\": true,\n    \"saturday\": true,\n    \"sunday\": true\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/services/my-profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "my-profile"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Provider Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/services/my-bookings?status=scheduled",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "my-bookings"],
+							"query": [
+								{
+									"key": "status",
+									"value": "scheduled"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Accept Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/services/booking/book_001/accept",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "booking", "book_001", "accept"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actual_cost\": 450.00,\n  \"waste_processed\": \"48 kg\",\n  \"completion_notes\": \"All waste processed successfully\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/services/booking/book_001/complete",
+							"host": ["{{base_url}}"],
+							"path": ["api", "services", "booking", "book_001", "complete"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Rewards",
+			"item": [
+				{
+					"name": "Get My Rewards",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/rewards/my-rewards",
+							"host": ["{{base_url}}"],
+							"path": ["api", "rewards", "my-rewards"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Rewards History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/rewards/history?limit=50",
+							"host": ["{{base_url}}"],
+							"path": ["api", "rewards", "history"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Redeem Rewards",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reward_id\": \"reward_001\",\n  \"points_to_redeem\": 500\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/rewards/redeem",
+							"host": ["{{base_url}}"],
+							"path": ["api", "rewards", "redeem"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Analytics",
+			"item": [
+				{
+					"name": "Get User Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "analytics", "dashboard"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Waste Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/waste-stats?period=month",
+							"host": ["{{base_url}}"],
+							"path": ["api", "analytics", "waste-stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "month",
+									"description": "week, month, year"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Environmental Impact",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/environmental-impact",
+							"host": ["{{base_url}}"],
+							"path": ["api", "analytics", "environmental-impact"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/users?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "users"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get all users (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get System Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/statistics",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "statistics"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Service Provider",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"provider_id\": \"sp_1\",\n  \"approved\": true,\n  \"notes\": \"All documents verified\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/approve-provider",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "approve-provider"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

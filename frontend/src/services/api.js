@@ -24,6 +24,15 @@ class ApiService {
     localStorage.removeItem('user_data');
   }
 
+  isAuthenticated() {
+    return !!this.token && !!localStorage.getItem('access_token');
+  }
+
+  getCurrentUser() {
+    const userData = localStorage.getItem('user_data');
+    return userData ? JSON.parse(userData) : null;
+  }
+
   getAuthHeaders() {
     const headers = { 'Content-Type': 'application/json' };
     if (this.token) {
@@ -73,8 +82,75 @@ class ApiService {
     }
   }
 
-  // ---- Other endpoints (login, profile, etc.) ----
-  // ... your existing methods here, unchanged ...
+  // ---- Authentication endpoints ----
+  async register(userData) {
+    const response = await this.makeRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Registration failed');
+    return data;
+  }
+
+  async login(email, password, rememberMe = false) {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, remember_me: rememberMe })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Login failed');
+
+    // Store tokens and user data
+    if (data.success && data.tokens) {
+      this.setTokens(data.tokens.access_token, data.tokens.refresh_token);
+      localStorage.setItem('user_data', JSON.stringify(data.user));
+    }
+    return data;
+  }
+
+  async logout() {
+    try {
+      await this.makeRequest('/auth/logout', { method: 'POST' });
+    } finally {
+      this.clearTokens();
+    }
+  }
+
+  async getProfile() {
+    const response = await this.makeRequest('/auth/profile');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch profile');
+    return data;
+  }
+
+  async updateProfile(profileData) {
+    const response = await this.makeRequest('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Profile update failed');
+    if (data.success && data.user) {
+      localStorage.setItem('user_data', JSON.stringify(data.user));
+    }
+    return data;
+  }
+
+  async changePassword(currentPassword, newPassword) {
+    const response = await this.makeRequest('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: newPassword
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Password change failed');
+    return data;
+  }
 
   // === WASTE CLASSIFICATION ===
   async classifyWaste(imageFile) {
