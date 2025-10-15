@@ -16,9 +16,9 @@ class Config:
     JWT_ALGORITHM = 'HS256'
 
     # File Upload Configuration
-    UPLOAD_FOLDER = 'uploads'
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads')
+    MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB (for high-resolution images)
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}  # Only image formats supported by AI model
 
     # Email Configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
