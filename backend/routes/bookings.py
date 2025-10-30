@@ -26,18 +26,25 @@ def create_booking():
         # Generate booking ID
         booking_id = f"book_{len(demo_data.bookings)+1:03d}"
 
-        # Calculate estimated cost based on waste type and quantity
-        base_costs = {
-            'plastic': 50,
-            'organic': 30,
-            'paper': 40,
-            'glass': 60,
-            'metal': 80,
-            'e-waste': 150
-        }
+        # Calculate estimated cost using the proper pricing utility
+        # Import at the top of this function to avoid circular imports
+        from utils.pricing import WastePricing
 
-        quantity_num = float(booking_data['quantity'].split()[0]) if booking_data['quantity'].split()[0].isdigit() else 1
-        estimated_cost = base_costs.get(booking_data['waste_type'], 50) * max(1, quantity_num / 10)
+        # Extract quantity in kg
+        quantity_str = booking_data['quantity'].split()[0]
+        quantity_kg = float(quantity_str) if quantity_str.replace('.', '', 1).isdigit() else 1.0
+
+        # Calculate net transaction (waste value - collection cost)
+        # Users should GET PAID for valuable waste, not charged
+        pricing = WastePricing.calculate_net_transaction(
+            waste_type=booking_data['waste_type'],
+            quantity_kg=quantity_kg,
+            subtype='mixed',  # Default to mixed, can be enhanced later
+            distance_km=0  # Can be calculated based on user location
+        )
+
+        # Negative net_amount means user pays, positive means user earns
+        estimated_cost = pricing['net_amount']
 
         new_booking = {
             'id': booking_id,

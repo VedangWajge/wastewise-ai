@@ -162,7 +162,7 @@ class ApiService {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}/classify`, {
+    const response = await fetch(`${API_BASE_URL}/ai/predict`, {
       method: 'POST',
       headers,
       body: formData
@@ -212,6 +212,11 @@ class ApiService {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to fetch bookings');
     return data;
+  }
+
+  // Alias for getUserBookings - for consistency
+  async getBookings(status = null) {
+    return this.getUserBookings(status);
   }
 
   async getBookingDetails(bookingId) {
@@ -322,6 +327,48 @@ class ApiService {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to fetch leaderboard');
     return data;
+  }
+
+  // Get all rewards data (points, badges, etc.) - for Profile component
+  async getRewards() {
+    try {
+      const [pointsData, badgesData] = await Promise.all([
+        this.getUserPoints(),
+        this.getUserBadges()
+      ]);
+
+      // Extract points value - handle both object and number formats
+      let pointsValue = 0;
+      if (pointsData && pointsData.points !== undefined) {
+        if (typeof pointsData.points === 'number') {
+          pointsValue = pointsData.points;
+        } else if (typeof pointsData.points === 'object' && pointsData.points !== null) {
+          // Handle object format: {current_balance, total_earned, total_spent, weekly_earned}
+          pointsValue = pointsData.points.current_balance ||
+                       pointsData.points.total_earned ||
+                       0;
+        }
+      }
+
+      return {
+        success: true,
+        points: pointsValue,
+        pointsDetails: pointsData.points, // Keep original for detailed view
+        level: pointsData.level || 1,
+        badges: badgesData.badges || [],
+        total_badges: badgesData.total_badges || 0
+      };
+    } catch (error) {
+      console.error('Error fetching rewards:', error);
+      return {
+        success: false,
+        points: 0,
+        pointsDetails: null,
+        level: 1,
+        badges: [],
+        total_badges: 0
+      };
+    }
   }
 
   // === PAYMENTS ===

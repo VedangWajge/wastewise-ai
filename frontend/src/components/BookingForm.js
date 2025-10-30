@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
 import './BookingForm.css';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
   const { user, isAuthenticated } = useAuth();
@@ -12,11 +14,49 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
     scheduled_time_slot: '',
     special_instructions: '',
     contact_phone: user?.phone || '',
-    contact_person: user?.full_name || ''
+    contact_person: user?.full_name || '',
+    waste_subtype: 'mixed'
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [authWarning, setAuthWarning] = useState(!isAuthenticated);
+  const [priceEstimate, setPriceEstimate] = useState(null);
+  const [subtypes, setSubtypes] = useState([]);
+
+  // Calculate price when quantity or subtype changes
+  useEffect(() => {
+    if (formData.quantity && parseFloat(formData.quantity) > 0) {
+      calculatePriceEstimate();
+    } else {
+      setPriceEstimate(null);
+    }
+  }, [formData.quantity, formData.waste_subtype, wasteType]);
+
+  const calculatePriceEstimate = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/marketplace/calculate-price`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          waste_type: wasteType,
+          quantity_kg: parseFloat(formData.quantity),
+          waste_subtype: formData.waste_subtype
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setPriceEstimate(data.pricing);
+        if (data.available_subtypes && data.available_subtypes.length > 0) {
+          setSubtypes(data.available_subtypes);
+        }
+      }
+    } catch (error) {
+      console.error('Error calculating price:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -193,23 +233,57 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
         <div className="form-section">
           <h3>📦 Waste Details</h3>
 
-          <div className="form-group">
-            <label htmlFor="quantity">
-              Quantity (kg) <span className="required">*</span>
-            </label>
-            <input
-              type="number"
-              id="quantity"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleInputChange}
-              placeholder="Enter quantity in kg"
-              min="1"
-              max="1000"
-              className={errors.quantity ? 'error' : ''}
-            />
-            {errors.quantity && <span className="error-text">{errors.quantity}</span>}
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="quantity">
+                Quantity (kg) <span className="required">*</span>
+              </label>
+              <input
+                type="number"
+                id="quantity"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleInputChange}
+                placeholder="Enter quantity in kg"
+                min="0.1"
+                step="0.1"
+                max="1000"
+                className={errors.quantity ? 'error' : ''}
+              />
+              {errors.quantity && <span className="error-text">{errors.quantity}</span>}
+            </div>
+
+            {subtypes.length > 0 && (
+              <div className="form-group">
+                <label htmlFor="waste_subtype">
+                  Waste Subtype
+                </label>
+                <select
+                  id="waste_subtype"
+                  name="waste_subtype"
+                  value={formData.waste_subtype}
+                  onChange={handleInputChange}
+                >
+                  {subtypes.map(st => (
+                    <option key={st.subtype} value={st.subtype}>
+                      {st.subtype} (₹{st.rate_per_kg}/kg)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
+
+          {priceEstimate && (
+            <div className="waste-value-info">
+              <div className="value-badge">
+                💰 Waste Value: ₹{priceEstimate.total_value}
+              </div>
+              <p className="value-note">
+                This is the estimated market value of your waste (₹{priceEstimate.rate_per_kg}/kg)
+              </p>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="special_instructions">
@@ -363,28 +437,63 @@ const BookingForm = ({ service, wasteType, onBookingComplete, onBack }) => {
           </div>
         </div>
 
-        <div className="cost-estimate">
-          <div className="cost-info">
-            <h4>💰 Estimated Cost</h4>
-            <div className="cost-breakdown">
-              <div className="cost-item">
-                <span>Service Fee:</span>
-                <span>₹{Math.floor(formData.quantity * 2.5) || 0}</span>
+        {priceEstimate && (
+          <div className="cost-estimate">
+            <div className="cost-info">
+              <h4>💰 Cost & Value Breakdown</h4>
+              <div className="cost-breakdown">
+                <div className="cost-section">
+                  <h5>Your Waste Value</h5>
+                  <div className="cost-item positive">
+                    <span>Market Value ({priceEstimate.rate_per_kg} × {priceEstimate.quantity_kg} kg):</span>
+                    <span>+ ₹{priceEstimate.total_value}</span>
+                  </div>
+                </div>
+
+                <div className="cost-section">
+                  <h5>Collection Charges</h5>
+                  <div className="cost-item">
+                    <span>Base Pickup Charge:</span>
+                    <span>₹30</span>
+                  </div>
+                  <div className="cost-item">
+                    <span>Collection Fee ({formData.quantity} kg):</span>
+                    <span>₹{(parseFloat(formData.quantity || 0) * 5).toFixed(2)}</span>
+                  </div>
+                  <div className="cost-item">
+                    <span>GST (18%):</span>
+                    <span>₹{((30 + parseFloat(formData.quantity || 0) * 5) * 0.18).toFixed(2)}</span>
+                  </div>
+                  <div className="cost-item subtotal">
+                    <span>Total Collection Cost:</span>
+                    <span>₹{((30 + parseFloat(formData.quantity || 0) * 5) * 1.18).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="cost-item total">
+                  <span><strong>Net Amount:</strong></span>
+                  <span className={priceEstimate.total_value - ((30 + parseFloat(formData.quantity || 0) * 5) * 1.18) >= 0 ? 'positive' : 'negative'}>
+                    <strong>
+                      {priceEstimate.total_value - ((30 + parseFloat(formData.quantity || 0) * 5) * 1.18) >= 0 ? '+ ' : '- '}
+                      ₹{Math.abs(priceEstimate.total_value - ((30 + parseFloat(formData.quantity || 0) * 5) * 1.18)).toFixed(2)}
+                    </strong>
+                  </span>
+                </div>
               </div>
-              <div className="cost-item">
-                <span>Transportation:</span>
-                <span>₹50</span>
-              </div>
-              <div className="cost-item total">
-                <span>Total:</span>
-                <span>₹{(Math.floor(formData.quantity * 2.5) || 0) + 50}</span>
-              </div>
+              <p className="cost-note">
+                {priceEstimate.total_value - ((30 + parseFloat(formData.quantity || 0) * 5) * 1.18) >= 0 ? (
+                  <span className="positive">
+                    ✓ You will earn money from this waste! Amount will be credited after collection.
+                  </span>
+                ) : (
+                  <span>
+                    💡 You will pay for the collection service. Final cost may vary based on actual quantity.
+                  </span>
+                )}
+              </p>
             </div>
-            <p className="cost-note">
-              💡 Final cost may vary based on actual quantity and service type
-            </p>
           </div>
-        </div>
+        )}
 
         <div className="form-actions">
           <button

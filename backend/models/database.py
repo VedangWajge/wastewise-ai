@@ -140,6 +140,117 @@ class DatabaseManager:
                 )
             ''')
 
+            # Create marketplace_listings table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS marketplace_listings (
+                    id TEXT PRIMARY KEY,
+                    user_id TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    description TEXT,
+                    waste_type TEXT NOT NULL,
+                    waste_subtype TEXT DEFAULT 'mixed',
+                    quantity_kg REAL NOT NULL,
+                    estimated_value REAL,
+                    asking_price REAL,
+                    location TEXT NOT NULL,
+                    latitude REAL,
+                    longitude REAL,
+                    city TEXT,
+                    state TEXT,
+                    pincode TEXT,
+                    images TEXT,
+                    condition TEXT DEFAULT 'good',
+                    pickup_available BOOLEAN DEFAULT 1,
+                    delivery_available BOOLEAN DEFAULT 0,
+                    status TEXT DEFAULT 'active',
+                    views_count INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            ''')
+
+            # Create marketplace_bookings table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS marketplace_bookings (
+                    id TEXT PRIMARY KEY,
+                    listing_id TEXT NOT NULL,
+                    buyer_id TEXT NOT NULL,
+                    seller_id TEXT NOT NULL,
+                    agreed_price REAL NOT NULL,
+                    quantity_kg REAL NOT NULL,
+                    pickup_address TEXT,
+                    pickup_date TEXT,
+                    pickup_time_slot TEXT,
+                    contact_person TEXT,
+                    contact_phone TEXT,
+                    status TEXT DEFAULT 'pending',
+                    payment_status TEXT DEFAULT 'pending',
+                    payment_id TEXT,
+                    transaction_id TEXT,
+                    special_instructions TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    completed_at TIMESTAMP,
+                    FOREIGN KEY (listing_id) REFERENCES marketplace_listings(id),
+                    FOREIGN KEY (buyer_id) REFERENCES users(id),
+                    FOREIGN KEY (seller_id) REFERENCES users(id)
+                )
+            ''')
+
+            # Create marketplace_reviews table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS marketplace_reviews (
+                    id TEXT PRIMARY KEY,
+                    booking_id TEXT NOT NULL,
+                    reviewer_id TEXT NOT NULL,
+                    reviewed_user_id TEXT NOT NULL,
+                    rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+                    review_text TEXT,
+                    transaction_type TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (booking_id) REFERENCES marketplace_bookings(id),
+                    FOREIGN KEY (reviewer_id) REFERENCES users(id),
+                    FOREIGN KEY (reviewed_user_id) REFERENCES users(id),
+                    UNIQUE(booking_id, reviewer_id)
+                )
+            ''')
+
+            # Create marketplace_transactions table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS marketplace_transactions (
+                    id TEXT PRIMARY KEY,
+                    booking_id TEXT NOT NULL,
+                    buyer_id TEXT NOT NULL,
+                    seller_id TEXT NOT NULL,
+                    transaction_type TEXT NOT NULL,
+                    amount REAL NOT NULL,
+                    platform_fee REAL DEFAULT 0,
+                    net_amount REAL NOT NULL,
+                    payment_method TEXT,
+                    payment_id TEXT,
+                    status TEXT DEFAULT 'pending',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    completed_at TIMESTAMP,
+                    FOREIGN KEY (booking_id) REFERENCES marketplace_bookings(id),
+                    FOREIGN KEY (buyer_id) REFERENCES users(id),
+                    FOREIGN KEY (seller_id) REFERENCES users(id)
+                )
+            ''')
+
+            # Create listing_images table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS listing_images (
+                    id TEXT PRIMARY KEY,
+                    listing_id TEXT NOT NULL,
+                    image_url TEXT NOT NULL,
+                    is_primary BOOLEAN DEFAULT 0,
+                    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (listing_id) REFERENCES marketplace_listings(id)
+                )
+            ''')
+
             conn.commit()
             conn.close()
             print("Database initialized successfully")

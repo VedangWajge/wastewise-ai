@@ -1,7 +1,7 @@
 import React from 'react';
 import './BookingCard.css';
 
-const BookingCard = ({ booking, onClick }) => {
+const BookingCard = ({ booking, onClick, onPayment }) => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'pending': return '⏳';
@@ -48,6 +48,33 @@ const BookingCard = ({ booking, onClick }) => {
 
   const formatTime = (timeSlot) => {
     return timeSlot || 'Time TBD';
+  };
+
+  const getPaymentStatusIcon = (paymentStatus) => {
+    switch (paymentStatus) {
+      case 'paid': return '✓';
+      case 'pending': return '⏳';
+      case 'failed': return '✗';
+      case 'refunded': return '↩️';
+      default: return '⏳';
+    }
+  };
+
+  const getPaymentStatusColor = (paymentStatus) => {
+    switch (paymentStatus) {
+      case 'paid': return '#10b981';
+      case 'pending': return '#f59e0b';
+      case 'failed': return '#ef4444';
+      case 'refunded': return '#6b7280';
+      default: return '#f59e0b';
+    }
+  };
+
+  const handlePaymentClick = (e) => {
+    e.stopPropagation();
+    if (onPayment) {
+      onPayment(booking);
+    }
   };
 
   return (
@@ -105,16 +132,39 @@ const BookingCard = ({ booking, onClick }) => {
           <span className="created-date">
             Created: {new Date(booking.created_at).toLocaleDateString()}
           </span>
-          {booking.total_amount && (
+          {booking.estimated_cost && (
             <span className="booking-amount">
-              ₹{booking.total_amount}
+              ₹{booking.estimated_cost}
             </span>
           )}
         </div>
 
+        {/* Payment Status */}
+        {booking.payment_status && (
+          <div className="payment-status-container">
+            <span
+              className="payment-status-badge"
+              style={{ backgroundColor: getPaymentStatusColor(booking.payment_status) }}
+            >
+              {getPaymentStatusIcon(booking.payment_status)} Payment: {booking.payment_status}
+            </span>
+          </div>
+        )}
+
         <div className="quick-actions">
-          {booking.status === 'pending' && (
-            <span className="action-hint">Click to manage</span>
+          {/* Pay Now Button */}
+          {booking.payment_status === 'pending' && booking.status !== 'cancelled' && (
+            <button
+              className="pay-now-btn"
+              onClick={handlePaymentClick}
+            >
+              💳 Pay Now
+            </button>
+          )}
+
+          {/* Other Action Hints */}
+          {booking.payment_status === 'paid' && booking.status === 'pending' && (
+            <span className="action-hint">✓ Paid - Click to manage</span>
           )}
           {booking.status === 'confirmed' && (
             <span className="action-hint">Track progress</span>

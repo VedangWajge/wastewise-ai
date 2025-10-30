@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import apiService from '../../services/api';
 import BookingCard from './BookingCard';
-import BookingDetails from './BookingDetails';
+import BookingDetailsEnhanced from './BookingDetailsEnhanced';
 import './BookingManagement.css';
+import './BookingDetailsEnhanced.css';
 
-const BookingManagement = () => {
+const BookingManagement = ({ onPaymentRequest }) => {
   const { user, isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +96,12 @@ const BookingManagement = () => {
     }
   };
 
+  const handlePaymentRequest = (booking) => {
+    if (onPaymentRequest) {
+      onPaymentRequest(booking.id, booking.estimated_cost || booking.total_amount);
+    }
+  };
+
   const getStatusCounts = () => {
     return {
       all: bookings.length,
@@ -106,9 +113,16 @@ const BookingManagement = () => {
     };
   };
 
-  const filteredBookings = filter === 'all'
-    ? bookings
-    : bookings.filter(booking => booking.status === filter);
+  const filteredBookings = (() => {
+    if (filter === 'all') return bookings;
+    if (filter === 'payment_pending') {
+      return bookings.filter(booking => booking.payment_status === 'pending');
+    }
+    if (filter === 'payment_paid') {
+      return bookings.filter(booking => booking.payment_status === 'paid');
+    }
+    return bookings.filter(booking => booking.status === filter);
+  })();
 
   if (!isAuthenticated) {
     return (
@@ -124,12 +138,13 @@ const BookingManagement = () => {
 
   if (showDetails && selectedBooking) {
     return (
-      <BookingDetails
+      <BookingDetailsEnhanced
         booking={selectedBooking}
         onBack={() => setShowDetails(false)}
         onCancel={handleCancelBooking}
         onReschedule={handleRescheduleBooking}
         onRate={handleRateBooking}
+        onPayment={handlePaymentRequest}
       />
     );
   }
@@ -160,23 +175,49 @@ const BookingManagement = () => {
       </div>
 
       <div className="booking-filters">
-        {[
-          { key: 'all', label: 'All Bookings', count: statusCounts.all },
-          { key: 'pending', label: 'Pending', count: statusCounts.pending },
-          { key: 'confirmed', label: 'Confirmed', count: statusCounts.confirmed },
-          { key: 'in_progress', label: 'In Progress', count: statusCounts.in_progress },
-          { key: 'completed', label: 'Completed', count: statusCounts.completed },
-          { key: 'cancelled', label: 'Cancelled', count: statusCounts.cancelled },
-        ].map(({ key, label, count }) => (
-          <button
-            key={key}
-            className={`filter-btn ${filter === key ? 'active' : ''}`}
-            onClick={() => setFilter(key)}
-          >
-            {label}
-            {count > 0 && <span className="filter-count">{count}</span>}
-          </button>
-        ))}
+        <div className="filter-group">
+          <span className="filter-group-label">Status:</span>
+          {[
+            { key: 'all', label: 'All', count: statusCounts.all },
+            { key: 'pending', label: 'Pending', count: statusCounts.pending },
+            { key: 'confirmed', label: 'Confirmed', count: statusCounts.confirmed },
+            { key: 'in_progress', label: 'In Progress', count: statusCounts.in_progress },
+            { key: 'completed', label: 'Completed', count: statusCounts.completed },
+            { key: 'cancelled', label: 'Cancelled', count: statusCounts.cancelled },
+          ].map(({ key, label, count }) => (
+            <button
+              key={key}
+              className={`filter-btn ${filter === key ? 'active' : ''}`}
+              onClick={() => setFilter(key)}
+            >
+              {label}
+              {count > 0 && <span className="filter-count">{count}</span>}
+            </button>
+          ))}
+        </div>
+
+        <div className="filter-group payment-filter">
+          <span className="filter-group-label">Payment:</span>
+          {[
+            { key: 'payment_pending', label: '💳 Pending Payment', icon: '⏳' },
+            { key: 'payment_paid', label: '✓ Paid', icon: '✓' },
+          ].map(({ key, label, icon }) => {
+            const count = key === 'payment_pending'
+              ? bookings.filter(b => b.payment_status === 'pending').length
+              : bookings.filter(b => b.payment_status === 'paid').length;
+
+            return (
+              <button
+                key={key}
+                className={`filter-btn payment ${filter === key ? 'active' : ''}`}
+                onClick={() => setFilter(key)}
+              >
+                {icon} {label}
+                {count > 0 && <span className="filter-count">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="booking-content">
@@ -214,6 +255,7 @@ const BookingManagement = () => {
                 key={booking.id}
                 booking={booking}
                 onClick={() => handleBookingClick(booking)}
+                onPayment={handlePaymentRequest}
               />
             ))}
           </div>

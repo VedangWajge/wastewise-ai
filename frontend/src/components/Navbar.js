@@ -93,6 +93,15 @@ const Navbar = ({ currentView, setCurrentView }) => {
             )}
             <li className="nav-item">
               <button
+                className={`nav-link ${currentView === 'marketplace' ? 'active' : ''}`}
+                onClick={() => handleNavClick('marketplace')}
+              >
+                <span className="nav-icon">🛒</span>
+                Marketplace
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
                 className={`nav-link ${currentView === 'services' ? 'active' : ''}`}
                 onClick={() => handleNavClick('services')}
               >

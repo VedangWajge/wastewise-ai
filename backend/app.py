@@ -4,11 +4,16 @@ from flask_jwt_extended import JWTManager
 from werkzeug.utils import secure_filename
 import os, uuid
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from config.settings import config
 from models.database import DatabaseManager
 from models.user_manager import UserManager
 from models.waste_classifier import WasteClassifier
+from models.unified_classifier import UnifiedWasteClassifier  # New unified classifier
 
 # Import your route blueprints
 from routes.auth import auth_bp
@@ -18,19 +23,27 @@ from routes.payments import payments_bp
 from routes.rewards import rewards_bp
 from routes.analytics import analytics_bp
 from routes.admin import admin_bp
+from routes.marketplace import marketplace_bp
+from routes.ai_routes import ai_bp  # New unified AI classifier
 
 def create_app(config_name='development'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
     # Enable CORS & JWT
-    CORS(app, origins=['*'], supports_credentials=True)
+    # Allow specific origins for CORS (required when using credentials)
+    CORS(app,
+         resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}},
+         supports_credentials=True,
+         allow_headers=["Content-Type", "Authorization"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     jwt = JWTManager(app)
 
     # DB & Model instances
     db = DatabaseManager()
     user_manager = UserManager()
-    classifier = WasteClassifier()
+    # Use unified classifier instead of old WasteClassifier
+    classifier = UnifiedWasteClassifier()  # Supports multiple AI providers!
 
     # JWT error handlers (omitted for brevity)…
     # @jwt.expired_token_loader...
@@ -39,7 +52,7 @@ def create_app(config_name='development'):
 
     # Register blueprints
     for bp in (auth_bp, bookings_bp, services_bp, payments_bp,
-               rewards_bp, analytics_bp, admin_bp):
+               rewards_bp, analytics_bp, admin_bp, marketplace_bp, ai_bp):
         app.register_blueprint(bp)
 
     # File upload config
@@ -72,8 +85,22 @@ def create_app(config_name='development'):
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # 3) Classify
-        classification = classifier.classify(filepath)
+        # 3) Classify using unified classifier (supports multiple AI providers)
+        result = classifier.classify(filepath)
+
+        # Get recommendations
+        recommendations = classifier.get_recommendations(result['waste_type'])
+
+        # Build classification object
+        classification = {
+            'waste_type': result['waste_type'],
+            'confidence': result['confidence'],
+            'recommendations': recommendations,
+            'environmental_impact': f"Proper disposal of {result['waste_type']} helps protect the environment",
+            'all_predictions': result.get('all_predictions', {}),
+            'provider_used': result.get('provider_used', 'unknown'),
+            'raw_category': result.get('raw_category')
+        }
 
         # 4) Persist & (optional) reward
         session_id = session.get('session_id', str(uuid.uuid4()))

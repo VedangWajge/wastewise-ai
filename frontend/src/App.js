@@ -13,6 +13,8 @@ import BookingManagement from './components/Bookings/BookingManagement';
 import RewardsCenter from './components/Rewards/RewardsCenter';
 import PaymentPortal from './components/Payment/PaymentPortal';
 import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
+import Marketplace from './components/Marketplace/Marketplace';
+import Profile from './components/Profile/Profile';
 import apiService from './services/api';
 import './App.css';
 
@@ -169,6 +171,8 @@ function App() {
         );
       case 'analytics':
         return <AnalyticsDashboard />;
+      case 'marketplace':
+        return <Marketplace />;
       case 'login':
         return (
           <Login
@@ -185,6 +189,8 @@ function App() {
         );
       case 'dashboard':
         return <Dashboard />;
+      case 'profile':
+        return <Profile setCurrentView={setCurrentView} />;
       default:
         return <Camera onImageCapture={handleImageCapture} />;
     }
