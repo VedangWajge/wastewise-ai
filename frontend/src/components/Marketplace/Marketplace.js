@@ -846,6 +846,82 @@ const ListingDetailsModal = ({ listing, onClose }) => {
 };
 
 const BookingsList = ({ bookings, loading }) => {
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+  const handlePayment = async (booking) => {
+    try {
+      const token = localStorage.getItem('access_token');
+
+      // Initiate payment for this booking
+      const response = await fetch(`${API_URL}/api/marketplace/bookings/${booking.id}/payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          payment_method: 'razorpay'
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Open Razorpay checkout
+        const options = {
+          key: data.razorpay_key_id,
+          amount: data.amount * 100, // Convert to paise
+          currency: 'INR',
+          name: 'WasteWise Marketplace',
+          description: `Payment for ${booking.listing_title}`,
+          order_id: data.razorpay_order_id,
+          handler: async function (response) {
+            // Verify payment
+            try {
+              const verifyResponse = await fetch(`${API_URL}/api/payments/verify`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  payment_id: data.payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature
+                })
+              });
+
+              if (verifyResponse.ok) {
+                alert('Payment successful! Your booking is confirmed.');
+                window.location.reload();
+              } else {
+                alert('Payment verification failed');
+              }
+            } catch (err) {
+              alert('Error verifying payment');
+            }
+          },
+          prefill: {
+            name: booking.contact_person,
+            contact: booking.contact_phone
+          },
+          theme: {
+            color: '#4caf50'
+          }
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      } else {
+        alert(data.error || 'Failed to initiate payment');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('An error occurred while processing payment');
+    }
+  };
+
   if (loading) {
     return <div className="loading-spinner">Loading...</div>;
   }
@@ -871,8 +947,23 @@ const BookingsList = ({ bookings, loading }) => {
             <p><strong>Price:</strong> ₹{booking.agreed_price}</p>
             <p><strong>Seller:</strong> {booking.seller_name}</p>
             <p><strong>Pickup Date:</strong> {booking.pickup_date} ({booking.pickup_time_slot})</p>
-            <p><strong>Payment Status:</strong> {booking.payment_status}</p>
+            <p><strong>Payment Status:</strong>
+              <span className={`payment-status payment-${booking.payment_status}`}>
+                {booking.payment_status}
+              </span>
+            </p>
           </div>
+
+          {booking.payment_status === 'pending' && (
+            <div className="booking-actions">
+              <button
+                className="btn btn-primary pay-now-btn"
+                onClick={() => handlePayment(booking)}
+              >
+                💳 Pay Now - ₹{booking.agreed_price}
+              </button>
+            </div>
+          )}
 
           <div className="booking-footer">
             <span className="booking-date">
