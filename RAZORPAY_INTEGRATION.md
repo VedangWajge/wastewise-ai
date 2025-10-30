@@ -33,8 +33,8 @@ WasteWise now has **real Razorpay payment integration** replacing the previous m
 
 ### Environment Variables (backend/.env)
 ```bash
-RAZORPAY_KEY_ID=rzp_test_RZVRElVZ45KgXB
-RAZORPAY_KEY_SECRET=qioPSGjqZmepkMi8GBpkpkKw
+RAZORPAY_KEY_ID=rzp_test_XXXXXXXXXXXXX
+RAZORPAY_KEY_SECRET=[REDACTED_SECRET]
 ```
 
 ### Key Types
@@ -60,7 +60,7 @@ order = payment_manager.create_order(
 #### 2. **Frontend Payment** (Razorpay Checkout)
 ```javascript
 var options = {
-  key: "rzp_test_RZVRElVZ45KgXB",
+  key: "rzp_test_XXXXXXXXXXXXX",
   amount: 42050,  // In paisa
   currency: "INR",
   order_id: "order_xxx",
