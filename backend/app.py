@@ -26,14 +26,17 @@ from routes.admin import admin_bp
 from routes.marketplace import marketplace_bp
 from routes.ai_routes import ai_bp  # New unified AI classifier
 
+
+
 def create_app(config_name='development'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
+
     # Enable CORS & JWT
     # Allow specific origins for CORS (required when using credentials)
     CORS(app,
-         resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}},
+         resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "*"]}},
          supports_credentials=True,
          allow_headers=["Content-Type", "Authorization"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])

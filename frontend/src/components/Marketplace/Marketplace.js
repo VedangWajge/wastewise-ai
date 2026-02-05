@@ -150,6 +150,9 @@ const Marketplace = () => {
     return colors[condition] || '#9e9e9e';
   };
 
+
+
+
   return (
     <div className="marketplace-container">
       <div className="marketplace-header">
@@ -785,7 +788,7 @@ const ListingDetailsModal = ({ listing, onClose }) => {
                 <input
                   type="date"
                   value={bookingForm.pickup_date}
-                  onChange={(e) => setBookingForm({...bookingForm, pickup_date: e.target.value})}
+                  onChange={(e) => setBookingForm({ ...bookingForm, pickup_date: e.target.value })}
                   required
                   min={new Date().toISOString().split('T')[0]}
                 />
@@ -795,7 +798,7 @@ const ListingDetailsModal = ({ listing, onClose }) => {
                 <label>Time Slot *</label>
                 <select
                   value={bookingForm.pickup_time_slot}
-                  onChange={(e) => setBookingForm({...bookingForm, pickup_time_slot: e.target.value})}
+                  onChange={(e) => setBookingForm({ ...bookingForm, pickup_time_slot: e.target.value })}
                   required
                 >
                   <option value="">Select time slot</option>
@@ -810,7 +813,7 @@ const ListingDetailsModal = ({ listing, onClose }) => {
                 <input
                   type="text"
                   value={bookingForm.contact_person}
-                  onChange={(e) => setBookingForm({...bookingForm, contact_person: e.target.value})}
+                  onChange={(e) => setBookingForm({ ...bookingForm, contact_person: e.target.value })}
                   required
                 />
               </div>
@@ -820,7 +823,7 @@ const ListingDetailsModal = ({ listing, onClose }) => {
                 <input
                   type="tel"
                   value={bookingForm.contact_phone}
-                  onChange={(e) => setBookingForm({...bookingForm, contact_phone: e.target.value})}
+                  onChange={(e) => setBookingForm({ ...bookingForm, contact_phone: e.target.value })}
                   required
                 />
               </div>
@@ -829,7 +832,7 @@ const ListingDetailsModal = ({ listing, onClose }) => {
                 <label>Special Instructions</label>
                 <textarea
                   value={bookingForm.special_instructions}
-                  onChange={(e) => setBookingForm({...bookingForm, special_instructions: e.target.value})}
+                  onChange={(e) => setBookingForm({ ...bookingForm, special_instructions: e.target.value })}
                   rows="3"
                 />
               </div>
@@ -846,6 +849,88 @@ const ListingDetailsModal = ({ listing, onClose }) => {
 };
 
 const BookingsList = ({ bookings, loading }) => {
+
+const handlePayment = async (booking) => {
+  try {
+    const token = localStorage.getItem("access_token"); // or however you store JWT
+
+    // 1️⃣ Create order on backend
+    const response = await fetch("http://localhost:5000/api/payments/initiate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // include only if your API uses JWT
+      },
+      body: JSON.stringify({
+        booking_id: booking.id,          // replace with your booking variable
+        amount: booking.amount,          // must match backend expectations
+        payment_method: "upi",           // can be "upi", "card", etc.
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Backend error:", errorData);
+      alert("Payment initiation failed: " + (errorData.error || "Unknown error"));
+      return;
+    }
+
+    const orderData = await response.json();
+    console.log("Order created:", orderData);
+
+    // 2️⃣ Initialize Razorpay
+    const options = {
+      key: orderData.key_id,              // from backend (Razorpay public key)
+      amount: orderData.amount,
+      currency: "INR",
+      name: "WasteWise",                  // your app or company name
+      description: "Booking Payment",
+      order_id: orderData.order_id,       // Razorpay order ID from backend
+      handler: async (response) => {
+        console.log("Payment successful:", response);
+
+        // 3️⃣ Verify payment
+        const verifyRes = await fetch("http://localhost:5000/api/payments/verify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+          }),
+        });
+
+        const verifyData = await verifyRes.json();
+        if (verifyRes.ok) {
+          alert("Payment verified successfully!");
+          console.log("Verified:", verifyData);
+        } else {
+          alert("Payment verification failed!");
+          console.error("Verification error:", verifyData);
+        }
+      },
+      prefill: {
+        name: booking.customer_name || "Customer",
+        email: booking.customer_email || "user@example.com",
+        contact: booking.customer_phone || "9999999999",
+      },
+      theme: {
+        color: "#3399cc",
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (error) {
+    console.error("Error in payment:", error);
+    alert("Payment process failed. Please try again.");
+  }
+};
+
   if (loading) {
     return <div className="loading-spinner">Loading...</div>;
   }
