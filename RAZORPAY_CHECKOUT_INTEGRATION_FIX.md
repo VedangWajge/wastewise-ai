@@ -306,8 +306,8 @@ API call fails
 
 ### Environment Variables Required:
 ```bash
-RAZORPAY_KEY_ID=rzp_test_RZVRElVZ45KgXB
-RAZORPAY_KEY_SECRET=qioPSGjqZmepkMi8GBpkpkKw
+RAZORPAY_KEY_ID=rzp_test_XXXXXXXXXXXXX
+RAZORPAY_KEY_SECRET=[REDACTED_SECRET]
 ```
 
 ### Switch to Live Mode:

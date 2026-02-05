@@ -10,8 +10,18 @@ import uuid
 from datetime import datetime, timedelta
 from utils.pricing import WastePricing
 import os
+import razorpay
 
 marketplace_bp = Blueprint('marketplace', __name__, url_prefix='/api/marketplace')
+
+# Load Razorpay credentials
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
+
+# Initialize Razorpay client
+razorpay_client = None
+if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
+    razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 def get_db_connection():
     """Get database connection"""
@@ -684,17 +694,21 @@ def delete_listing(listing_id):
 @marketplace_bp.route('/bookings/<booking_id>/payment', methods=['POST'])
 @jwt_required()
 def process_booking_payment(booking_id):
-    """Process payment for a marketplace booking"""
+    """Initiate payment for a marketplace booking"""
     try:
         user_id = get_jwt_identity()
         data = request.json
+
+        # Check if Razorpay is configured
+        if not razorpay_client:
+            return jsonify({'error': 'Payment gateway not configured'}), 500
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
         # Get booking details
         cursor.execute('''
-            SELECT b.*, l.waste_type, l.waste_subtype
+            SELECT b.*, l.waste_type, l.waste_subtype, l.title as listing_title
             FROM marketplace_bookings b
             JOIN marketplace_listings l ON b.listing_id = l.id
             WHERE b.id = ? AND b.buyer_id = ?
@@ -707,13 +721,29 @@ def process_booking_payment(booking_id):
 
         booking_dict = dict(booking)
 
+        # Check if already paid
+        if booking_dict.get('payment_status') == 'paid':
+            conn.close()
+            return jsonify({'error': 'Payment already completed'}), 400
+
+        # Create Razorpay order
+        amount = float(booking_dict['agreed_price'])
+        order_data = {
+            'amount': int(amount * 100),  # Convert to paise
+            'currency': 'INR',
+            'receipt': f"mkt_{booking_id}",
+            'payment_capture': 1  # Auto-capture
+        }
+
+        razorpay_order = razorpay_client.order.create(data=order_data)
+
         # Create transaction record
         transaction_id = f"mkt_txn_{uuid.uuid4().hex[:12]}"
-        payment_id = data.get('payment_id', f"pay_{uuid.uuid4().hex[:12]}")
+        payment_id = f"pay_{uuid.uuid4().hex[:12]}"
 
         # Platform fee (e.g., 5% of transaction value)
-        platform_fee = booking_dict['agreed_price'] * 0.05
-        net_amount = booking_dict['agreed_price'] - platform_fee
+        platform_fee = amount * 0.05
+        net_amount = amount - platform_fee
 
         cursor.execute('''
             INSERT INTO marketplace_transactions
@@ -726,18 +756,18 @@ def process_booking_payment(booking_id):
             booking_dict['buyer_id'],
             booking_dict['seller_id'],
             'purchase',
-            booking_dict['agreed_price'],
+            amount,
             platform_fee,
             net_amount,
-            data.get('payment_method', 'online'),
+            data.get('payment_method', 'razorpay'),
             payment_id,
             'pending'
         ))
 
-        # Update booking payment status
+        # Update booking payment status to processing
         cursor.execute('''
             UPDATE marketplace_bookings
-            SET payment_status = 'paid',
+            SET payment_status = 'processing',
                 payment_id = ?,
                 transaction_id = ?,
                 updated_at = ?
@@ -747,12 +777,16 @@ def process_booking_payment(booking_id):
         conn.commit()
         conn.close()
 
+        # Return Razorpay order details for frontend
         return jsonify({
-            'message': 'Payment processed successfully',
+            'success': True,
+            'payment_id': payment_id,
             'transaction_id': transaction_id,
-            'amount_paid': booking_dict['agreed_price'],
-            'platform_fee': platform_fee,
-            'seller_receives': net_amount
+            'razorpay_order_id': razorpay_order['id'],
+            'razorpay_key_id': RAZORPAY_KEY_ID,
+            'amount': amount,
+            'currency': 'INR',
+            'booking_id': booking_id
         }), 200
 
     except Exception as e:

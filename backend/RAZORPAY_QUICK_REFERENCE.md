@@ -31,8 +31,8 @@ failure@razorpay  → Payment fails
 
 ### .env file (backend/.env):
 ```bash
-RAZORPAY_KEY_ID=rzp_test_RZVRElVZ45KgXB
-RAZORPAY_KEY_SECRET=qioPSGjqZmepkMi8GBpkpkKw
+RAZORPAY_KEY_ID=rzp_test_XXXXXXXXXXXXX
+RAZORPAY_KEY_SECRET=[REDACTED_SECRET]
 ```
 
 ## Payment Flow
