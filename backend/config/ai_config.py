@@ -46,7 +46,11 @@ class AIConfig:
 
     # Google Gemini Configuration
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
-    GEMINI_MODEL = 'gemini-2.0-flash-exp'  # Updated to valid model name
+    GEMINI_MODEL = 'gemini-2.0-flash'  # ✅ FIXED: Changed from 'gemini-2.0-flash-exp' to stable model
+    # Alternative options:
+    # - 'gemini-1.5-flash' (recommended - fast and efficient)
+    # - 'gemini-1.5-pro' (more capable but slower)
+    # - 'gemini-1.5-flash-8b' (faster, smaller model)
 
     # OpenAI Configuration
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')

@@ -11,6 +11,8 @@ import requests
 import numpy as np
 from PIL import Image
 import io
+import json
+import re
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -190,56 +192,182 @@ class UnifiedWasteClassifier:
         except ImportError:
             raise ImportError("Install google-generativeai: pip install google-generativeai")
 
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(self.config.GEMINI_MODEL)
+        try:
+            # Configure API
+            genai.configure(api_key=api_key)
+            
+            # List available models for debugging
+            try:
+                print("[INFO] Listing available Gemini models...")
+                available_model_list = genai.list_models()
+                vision_models = [m.name for m in available_model_list if 'generateContent' in m.supported_generation_methods]
+                print(f"[INFO] Available vision models: {vision_models}")
+            except Exception as e:
+                print(f"[WARNING] Could not list models: {e}")
+            
+            # Initialize model with proper configuration
+            generation_config = {
+                "temperature": 0.4,
+                "top_p": 1,
+                "top_k": 32,
+                "max_output_tokens": 512,
+            }
+            
+            # List of available Gemini models to try (in order of preference)
+            # Note: Don't include 'models/' prefix - SDK adds it automatically
+            available_models = [
+            "models/gemini-2.0-flash-lite",
+            "models/gemini-2.0-flash-lite-001",
+            "models/gemini-flash-lite-latest",
+            ]
 
-        # Load image into memory to avoid file locking issues on Windows
-        with Image.open(image_path) as img:
-            # Create a copy in memory so we can close the file handle
-            img = img.copy()
+            
+            # Add config model if it exists and is different
+            if hasattr(self.config, 'GEMINI_MODEL') and self.config.GEMINI_MODEL:
+                config_model = self.config.GEMINI_MODEL.replace('models/', '')  # Remove prefix if present
+                if config_model not in available_models:
+                    available_models.insert(0, config_model)
+            
+            model = None
+            last_error = None
+            
+            for model_name in available_models:
+                try:
+                    # Try both with and without 'models/' prefix
+                    for name_variant in [model_name, f"models/{model_name}"]:
+                        try:
+                            model = genai.GenerativeModel(
+                                model_name=name_variant,
+                                generation_config=generation_config
+                            )
+                            print(f"[INFO] Successfully loaded Gemini model: {name_variant}")
+                            break
+                        except Exception as e:
+                            last_error = e
+                            continue
+                    
+                    if model is not None:
+                        break
+                        
+                except Exception as e:
+                    last_error = e
+                    print(f"[WARNING] Failed to load {model_name}: {e}")
+                    continue
+            
+            if model is None:
+                raise RuntimeError(f"Could not initialize any Gemini model. Last error: {last_error}")
 
-        # Create prompt for waste classification
-        prompt = f"""Analyze this image and classify the waste type.
+            # Load and prepare image
+            img = Image.open(image_path)
+            
+            # Convert to RGB if necessary
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+
+            # Create prompt for waste classification
+            prompt = f"""Analyze this image and classify the waste type.
 
 Available categories: {', '.join(self.config.WASTE_CATEGORIES)}
 
-Respond in this EXACT JSON format:
-{{
-    "waste_type": "most likely category from the list",
-    "confidence": 0.95,
-    "reasoning": "brief explanation"
-}}"""
+You must respond ONLY with valid JSON in this exact format (no markdown, no backticks, no extra text):
+{{"waste_type": "category_name", "confidence": 0.95, "reasoning": "brief explanation"}}
 
-        # Generate content
-        response = model.generate_content([prompt, img])
+The waste_type must be one of the available categories listed above."""
 
-        # Parse response
-        import json
-        import re
+            # Generate content with error handling
+            try:
+                response = model.generate_content([prompt, img])
+                
+                # Check if response was blocked
+                if not response.text:
+                    if hasattr(response, 'prompt_feedback'):
+                        raise RuntimeError(f"Gemini blocked the request: {response.prompt_feedback}")
+                    raise RuntimeError("Gemini returned empty response")
+                
+                text = response.text.strip()
+                
+            except Exception as e:
+                raise RuntimeError(f"Gemini API call failed: {str(e)}")
 
-        # Extract JSON from response
-        text = response.text
-        json_match = re.search(r'\{[^}]+\}', text, re.DOTALL)
-        if json_match:
-            result = json.loads(json_match.group())
-            waste_type = result.get('waste_type', 'trash')
-            confidence = result.get('confidence', 0.7)
+            # Parse JSON response with better error handling
+            try:
+                # Remove markdown code blocks if present
+                text = re.sub(r'```json\s*', '', text)
+                text = re.sub(r'```\s*', '', text)
+                text = text.strip()
+                
+                # Try to find JSON object in the response
+                json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL)
+                
+                if json_match:
+                    json_str = json_match.group()
+                    result = json.loads(json_str)
+                else:
+                    # If no JSON found, try parsing the whole response
+                    result = json.loads(text)
+                
+                waste_type = result.get('waste_type', 'general')
+                confidence = float(result.get('confidence', 0.7))
+                
+                # Validate waste_type is in available categories
+                if waste_type not in self.config.WASTE_CATEGORIES:
+                    # Try to find closest match
+                    waste_type_lower = waste_type.lower()
+                    for category in self.config.WASTE_CATEGORIES:
+                        if category.lower() in waste_type_lower or waste_type_lower in category.lower():
+                            waste_type = category
+                            break
+                    else:
+                        waste_type = 'general'
 
-            return {
-                'waste_type': self.config.CATEGORY_MAPPING.get(waste_type, waste_type),
-                'raw_category': waste_type,
-                'confidence': confidence,
-                'reasoning': result.get('reasoning', ''),
-                'all_predictions': [
-                    {
-                        'class': waste_type,
-                        'mapped_type': self.config.CATEGORY_MAPPING.get(waste_type, waste_type),
-                        'confidence': confidence
-                    }
-                ]
-            }
-
-        raise ValueError("Could not parse Gemini response")
+                return {
+                    'waste_type': self.config.CATEGORY_MAPPING.get(waste_type, waste_type),
+                    'raw_category': waste_type,
+                    'confidence': confidence,
+                    'reasoning': result.get('reasoning', ''),
+                    'all_predictions': [
+                        {
+                            'class': waste_type,
+                            'mapped_type': self.config.CATEGORY_MAPPING.get(waste_type, waste_type),
+                            'confidence': confidence
+                        }
+                    ]
+                }
+                
+            except json.JSONDecodeError as e:
+                print(f"[ERROR] Failed to parse Gemini JSON response: {text}")
+                print(f"[ERROR] JSON Error: {str(e)}")
+                
+                # Fallback: try to extract information from text
+                waste_type = 'general'
+                confidence = 0.5
+                
+                # Try to find waste type in text
+                for category in self.config.WASTE_CATEGORIES:
+                    if category.lower() in text.lower():
+                        waste_type = category
+                        confidence = 0.6
+                        break
+                
+                return {
+                    'waste_type': self.config.CATEGORY_MAPPING.get(waste_type, waste_type),
+                    'raw_category': waste_type,
+                    'confidence': confidence,
+                    'reasoning': 'Parsed from unstructured response',
+                    'all_predictions': [
+                        {
+                            'class': waste_type,
+                            'mapped_type': self.config.CATEGORY_MAPPING.get(waste_type, waste_type),
+                            'confidence': confidence
+                        }
+                    ]
+                }
+                
+        except ImportError as e:
+            raise e
+        except Exception as e:
+            print(f"[ERROR] Gemini classification failed: {str(e)}")
+            raise RuntimeError(f"Gemini classification error: {str(e)}")
 
     def _classify_openai(self, image_path, top_k):
         """Classify using OpenAI GPT-4 Vision API"""
@@ -311,13 +439,10 @@ Respond in this EXACT JSON format:
         content = result['choices'][0]['message']['content']
 
         # Parse JSON response
-        import json
-        import re
-
         json_match = re.search(r'\{[^}]+\}', content, re.DOTALL)
         if json_match:
             parsed = json.loads(json_match.group())
-            waste_type = parsed.get('waste_type', 'trash')
+            waste_type = parsed.get('waste_type', 'general')
             confidence = parsed.get('confidence', 0.7)
 
             return {
@@ -364,7 +489,7 @@ Respond in this EXACT JSON format:
                         ]
                     }
 
-        # Default to trash if no match
+        # Default to general if no match
         return {
             'waste_type': 'general',
             'raw_category': hf_results[0].get('label') if hf_results else 'unknown',
