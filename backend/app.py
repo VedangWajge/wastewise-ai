@@ -12,8 +12,7 @@ load_dotenv()
 from config.settings import config
 from models.database import DatabaseManager
 from models.user_manager import UserManager
-from models.waste_classifier import WasteClassifier
-from models.unified_classifier import UnifiedWasteClassifier  # New unified classifier
+from models.unified_classifier import WasteClassifier  # Simplified classifier
 
 # Import your route blueprints
 from routes.auth import auth_bp
@@ -42,8 +41,7 @@ def create_app(config_name='development'):
     # DB & Model instances
     db = DatabaseManager()
     user_manager = UserManager()
-    # Use unified classifier instead of old WasteClassifier
-    classifier = UnifiedWasteClassifier()  # Supports multiple AI providers!
+    classifier = WasteClassifier()
 
     # JWT error handlers (omitted for brevity)…
     # @jwt.expired_token_loader...
@@ -85,7 +83,7 @@ def create_app(config_name='development'):
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # 3) Classify using unified classifier (supports multiple AI providers)
+        # 3) Classify using classifier
         result = classifier.classify(filepath)
 
         # Get recommendations
@@ -97,9 +95,7 @@ def create_app(config_name='development'):
             'confidence': result['confidence'],
             'recommendations': recommendations,
             'environmental_impact': f"Proper disposal of {result['waste_type']} helps protect the environment",
-            'all_predictions': result.get('all_predictions', {}),
-            'provider_used': result.get('provider_used', 'unknown'),
-            'raw_category': result.get('raw_category')
+            'all_predictions': result.get('all_predictions', {})
         }
 
         # 4) Persist & (optional) reward
