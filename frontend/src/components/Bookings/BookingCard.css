@@ -165,6 +165,42 @@
   color: #e0e0e0;
 }
 
+/* Payment Status Styles */
+.payment-status-container {
+  margin-top: 8px;
+}
+
+.payment-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+}
+
+.pay-now-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.pay-now-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.pay-now-btn:active {
+  transform: translateY(0);
+}
+
 @media (max-width: 480px) {
   .booking-card {
     padding: 16px;
@@ -176,5 +212,9 @@
 
   .action-btn {
     flex: none;
+  }
+
+  .pay-now-btn {
+    width: 100%;
   }
 }

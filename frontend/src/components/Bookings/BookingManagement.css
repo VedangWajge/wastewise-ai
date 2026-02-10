@@ -56,9 +56,30 @@
 
 .booking-filters {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 20px;
   margin-bottom: 30px;
+}
+
+.filter-group {
+  display: flex;
+  gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-group-label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 10px;
+}
+
+.filter-group.payment-filter {
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
 }
 
 .filter-btn {

@@ -83,63 +83,6 @@ class DatabaseManager:
                     VALUES (?, ?, ?, ?, ?, ?)
                 ''', category)
 
-            # Create user_points table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS user_points (
-                    user_id TEXT PRIMARY KEY,
-                    total_points INTEGER DEFAULT 0,
-                    points_earned INTEGER DEFAULT 0,
-                    points_spent INTEGER DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-
-            # Create point_transactions table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS point_transactions (
-                    id TEXT PRIMARY KEY,
-                    user_id TEXT NOT NULL,
-                    points INTEGER NOT NULL,
-                    transaction_type TEXT NOT NULL,
-                    reason TEXT,
-                    reference_id TEXT,
-                    balance_after INTEGER NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-
-            # Create user_badges table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS user_badges (
-                    id TEXT PRIMARY KEY,
-                    user_id TEXT NOT NULL,
-                    badge_id TEXT NOT NULL,
-                    badge_name TEXT NOT NULL,
-                    badge_description TEXT,
-                    icon TEXT,
-                    points_awarded INTEGER DEFAULT 0,
-                    earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    UNIQUE(user_id, badge_id)
-                )
-            ''')
-
-            # Create reward_redemptions table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS reward_redemptions (
-                    id TEXT PRIMARY KEY,
-                    user_id TEXT NOT NULL,
-                    reward_id TEXT NOT NULL,
-                    reward_name TEXT NOT NULL,
-                    quantity INTEGER DEFAULT 1,
-                    points_spent INTEGER NOT NULL,
-                    status TEXT DEFAULT 'processing',
-                    redeemed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    estimated_delivery TIMESTAMP,
-                    tracking_info TEXT
-                )
-            ''')
-
             conn.commit()
             conn.close()
             print("Database initialized successfully")

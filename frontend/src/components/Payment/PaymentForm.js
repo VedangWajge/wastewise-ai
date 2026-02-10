@@ -45,53 +45,22 @@ const PaymentForm = ({ amount, paymentMethods, onSubmit, loading, disabled }) =>
   const validateForm = () => {
     const newErrors = {};
 
-    if (formData.method === 'card') {
-      if (!formData.cardNumber) {
-        newErrors.cardNumber = 'Card number is required';
-      } else if (formData.cardNumber.replace(/\s/g, '').length < 16) {
-        newErrors.cardNumber = 'Card number must be 16 digits';
-      }
-
-      if (!formData.expiryMonth) {
-        newErrors.expiryMonth = 'Expiry month is required';
-      }
-
-      if (!formData.expiryYear) {
-        newErrors.expiryYear = 'Expiry year is required';
-      }
-
-      if (!formData.cvv) {
-        newErrors.cvv = 'CVV is required';
-      } else if (formData.cvv.length < 3) {
-        newErrors.cvv = 'CVV must be 3-4 digits';
-      }
-
-      if (!formData.cardName.trim()) {
-        newErrors.cardName = 'Cardholder name is required';
-      }
-
-      // Check if card is expired
-      if (formData.expiryMonth && formData.expiryYear) {
-        const currentDate = new Date();
-        const cardExpiry = new Date(parseInt(formData.expiryYear), parseInt(formData.expiryMonth) - 1);
-        if (cardExpiry < currentDate) {
-          newErrors.expiryMonth = 'Card is expired';
-        }
-      }
-    }
-
-    if (formData.method === 'upi') {
-      if (!formData.upiId) {
-        newErrors.upiId = 'UPI ID is required';
-      } else if (!formData.upiId.includes('@')) {
-        newErrors.upiId = 'Invalid UPI ID format';
-      }
+    // For card and UPI, Razorpay handles the payment details
+    // So we skip validation and let Razorpay collect the info
+    if (formData.method === 'card' || formData.method === 'upi') {
+      // No validation needed - Razorpay will handle it
+      return true;
     }
 
     if (formData.method === 'netbanking') {
       if (!formData.bankAccount) {
         newErrors.bankAccount = 'Please select a bank';
       }
+    }
+
+    if (formData.method === 'wallet') {
+      // Razorpay handles wallet selection
+      return true;
     }
 
     setErrors(newErrors);
@@ -105,6 +74,7 @@ const PaymentForm = ({ amount, paymentMethods, onSubmit, loading, disabled }) =>
       return;
     }
 
+    // Just send the payment method, Razorpay will handle the rest
     onSubmit(formData);
   };
 
@@ -166,7 +136,11 @@ const PaymentForm = ({ amount, paymentMethods, onSubmit, loading, disabled }) =>
 
         {formData.method === 'card' && (
           <div className="payment-details card-details">
-            <h3>Card Details</h3>
+            <div className="razorpay-notice">
+              <span className="notice-icon">🔒</span>
+              <p>You will be redirected to Razorpay's secure checkout to enter your card details.</p>
+            </div>
+            <h3>Card Details (Handled by Razorpay)</h3>
 
             <div className="form-group">
               <label htmlFor="cardNumber">
@@ -287,7 +261,11 @@ const PaymentForm = ({ amount, paymentMethods, onSubmit, loading, disabled }) =>
 
         {formData.method === 'upi' && (
           <div className="payment-details upi-details">
-            <h3>UPI Details</h3>
+            <div className="razorpay-notice">
+              <span className="notice-icon">🔒</span>
+              <p>You will be redirected to Razorpay's secure checkout for UPI payment.</p>
+            </div>
+            <h3>UPI Details (Handled by Razorpay)</h3>
             <div className="form-group">
               <label htmlFor="upiId">
                 UPI ID <span className="required">*</span>

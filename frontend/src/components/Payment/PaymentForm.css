@@ -7,6 +7,29 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
+.razorpay-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.razorpay-notice .notice-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.razorpay-notice p {
+  margin: 0;
+  color: #1565c0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
 .payment-form-header {
   text-align: center;
   margin-bottom: 25px;

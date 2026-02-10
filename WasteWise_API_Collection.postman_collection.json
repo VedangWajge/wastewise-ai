@@ -1,0 +1,1136 @@
+{
+  "info": {
+    "name": "WasteWise API Collection",
+    "description": "Complete API collection for WasteWise - AI-Powered Waste Management Platform\n\nIncludes:\n- Authentication APIs\n- Waste Classification\n- Booking Management\n- Service Provider APIs\n- Payment APIs\n- Marketplace APIs (NEW)\n- Pricing APIs (NEW)\n- Rewards & Analytics",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "booking_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "listing_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.tokens) {",
+                  "        pm.collectionVariables.set('access_token', response.tokens.access_token);",
+                  "        pm.collectionVariables.set('refresh_token', response.tokens.refresh_token);",
+                  "    }",
+                  "    if (response.user) {",
+                  "        pm.collectionVariables.set('user_id', response.user.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"full_name\": \"Test User\",\n  \"phone\": \"+1234567890\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.tokens) {",
+                  "        pm.collectionVariables.set('access_token', response.tokens.access_token);",
+                  "        pm.collectionVariables.set('refresh_token', response.tokens.refresh_token);",
+                  "    }",
+                  "    if (response.user) {",
+                  "        pm.collectionVariables.set('user_id', response.user.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"remember_me\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with email and password"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Get current authenticated user details"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.tokens) {",
+                  "        pm.collectionVariables.set('access_token', response.tokens.access_token);",
+                  "        pm.collectionVariables.set('refresh_token', response.tokens.refresh_token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Refresh access token using refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout current user"
+          },
+          "response": []
+        }
+      ],
+      "description": "User authentication endpoints"
+    },
+    {
+      "name": "2. Waste Classification",
+      "item": [
+        {
+          "name": "Classify Waste Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "/path/to/waste/image.jpg",
+                  "description": "Upload waste image for classification"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/classify",
+              "host": ["{{base_url}}"],
+              "path": ["classify"]
+            },
+            "description": "Upload an image to classify waste type using AI"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Waste Info by Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/waste-info/plastic",
+              "host": ["{{base_url}}"],
+              "path": ["waste-info", "plastic"]
+            },
+            "description": "Get information about a specific waste type"
+          },
+          "response": []
+        }
+      ],
+      "description": "AI-powered waste classification endpoints"
+    },
+    {
+      "name": "3. Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.booking && response.booking.id) {",
+                  "        pm.collectionVariables.set('booking_id', response.booking.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_provider_id\": \"sp_001\",\n  \"waste_type\": \"plastic\",\n  \"quantity\": \"50 kg\",\n  \"pickup_address\": \"123 Green Street, Mumbai, Maharashtra 400001\",\n  \"scheduled_date\": \"2025-11-15T10:00:00Z\",\n  \"scheduled_time_slot\": \"10:00 AM - 12:00 PM\",\n  \"contact_person\": \"John Doe\",\n  \"contact_phone\": \"+919876543210\",\n  \"special_instructions\": \"Please ring doorbell twice\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/create",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "create"]
+            },
+            "description": "Create a new waste collection booking"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/my-bookings?page=1&per_page=20&status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "my-bookings"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status: pending, confirmed, in_progress, completed, cancelled"
+                }
+              ]
+            },
+            "description": "Get all bookings for the current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Booking Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}"]
+            },
+            "description": "Get detailed information about a specific booking"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellation_reason\": \"Change of plans\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}", "cancel"]
+            },
+            "description": "Cancel a booking with refund calculation"
+          },
+          "response": []
+        },
+        {
+          "name": "Reschedule Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_date\": \"2025-11-20T10:00:00Z\",\n  \"new_time_slot\": \"2:00 PM - 4:00 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}/reschedule",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}", "reschedule"]
+            },
+            "description": "Reschedule an existing booking"
+          },
+          "response": []
+        },
+        {
+          "name": "Rate Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"review\": \"Excellent service! Very professional and on time.\",\n  \"service_quality\": 5,\n  \"punctuality\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}/rate",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}", "rate"]
+            },
+            "description": "Rate and review a completed booking"
+          },
+          "response": []
+        },
+        {
+          "name": "Track Booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}/track",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}", "track"]
+            },
+            "description": "Get real-time tracking information for a booking"
+          },
+          "response": []
+        }
+      ],
+      "description": "Booking management endpoints"
+    },
+    {
+      "name": "4. Payments",
+      "item": [
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": \"{{booking_id}}\",\n  \"amount\": 420.50,\n  \"payment_method\": \"card\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/initiate",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "initiate"]
+            },
+            "description": "Initiate payment for a booking"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": \"order_abc123\",\n  \"payment_id\": \"pay_xyz789\",\n  \"signature\": \"generated_signature_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/verify",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "verify"]
+            },
+            "description": "Verify payment completion"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payments/history?page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "history"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get payment history for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Methods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payments/methods",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "methods"]
+            },
+            "description": "Get available payment methods"
+          },
+          "response": []
+        },
+        {
+          "name": "Request Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Service not satisfactory\",\n  \"refund_amount\": 420.50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/pay_xyz789/refund",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "pay_xyz789", "refund"]
+            },
+            "description": "Request refund for a payment"
+          },
+          "response": []
+        }
+      ],
+      "description": "Payment processing endpoints"
+    },
+    {
+      "name": "5. Marketplace (NEW)",
+      "item": [
+        {
+          "name": "Calculate Waste Price",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"waste_type\": \"plastic\",\n  \"quantity_kg\": 50,\n  \"waste_subtype\": \"PET bottles\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/marketplace/calculate-price",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "calculate-price"]
+            },
+            "description": "Calculate estimated price for waste based on type and quantity"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Marketplace Listing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.listing_id) {",
+                  "        pm.collectionVariables.set('listing_id', response.listing_id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Clean PET Bottles - 50kg\",\n  \"description\": \"Mixed color PET bottles, cleaned and sorted. Ready for recycling.\",\n  \"waste_type\": \"plastic\",\n  \"waste_subtype\": \"PET bottles\",\n  \"quantity_kg\": 50,\n  \"asking_price\": 750,\n  \"location\": \"123 Green Street, Mumbai\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400001\",\n  \"condition\": \"good\",\n  \"pickup_available\": true,\n  \"delivery_available\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/marketplace/listings/create",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "listings", "create"]
+            },
+            "description": "Create a new marketplace listing for waste"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Marketplace Listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/marketplace/listings/search?waste_type=plastic&city=Mumbai&max_price=1000&condition=good&sort_by=created_at&order=DESC&page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "listings", "search"],
+              "query": [
+                {
+                  "key": "waste_type",
+                  "value": "plastic",
+                  "description": "Filter by waste type"
+                },
+                {
+                  "key": "city",
+                  "value": "Mumbai",
+                  "description": "Filter by city"
+                },
+                {
+                  "key": "max_price",
+                  "value": "1000",
+                  "description": "Maximum price filter"
+                },
+                {
+                  "key": "min_quantity",
+                  "value": "10",
+                  "description": "Minimum quantity in kg",
+                  "disabled": true
+                },
+                {
+                  "key": "max_quantity",
+                  "value": "100",
+                  "description": "Maximum quantity in kg",
+                  "disabled": true
+                },
+                {
+                  "key": "condition",
+                  "value": "good",
+                  "description": "Filter by condition: excellent, good, fair"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "created_at",
+                  "description": "Sort by: created_at, asking_price, quantity_kg, views_count"
+                },
+                {
+                  "key": "order",
+                  "value": "DESC",
+                  "description": "Order: ASC or DESC"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search and filter marketplace listings"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Listing Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/marketplace/listings/{{listing_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "listings", "{{listing_id}}"]
+            },
+            "description": "Get detailed information about a specific listing"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/marketplace/my-listings?status=active&page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "my-listings"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "Filter by status: active, booked, sold, deleted"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all listings created by current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Listing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Clean PET Bottles - 60kg (Updated)\",\n  \"quantity_kg\": 60,\n  \"asking_price\": 900,\n  \"condition\": \"excellent\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/marketplace/listings/{{listing_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "listings", "{{listing_id}}"]
+            },
+            "description": "Update an existing listing"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Listing",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/marketplace/listings/{{listing_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "listings", "{{listing_id}}"]
+            },
+            "description": "Delete a listing (soft delete)"
+          },
+          "response": []
+        },
+        {
+          "name": "Book Marketplace Listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agreed_price\": 750,\n  \"quantity_kg\": 50,\n  \"pickup_date\": \"2025-11-20\",\n  \"pickup_time_slot\": \"09:00-12:00\",\n  \"contact_person\": \"John Doe\",\n  \"contact_phone\": \"+919876543210\",\n  \"special_instructions\": \"Please call before arriving\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/marketplace/listings/{{listing_id}}/book",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "listings", "{{listing_id}}", "book"]
+            },
+            "description": "Book a marketplace listing"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Marketplace Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/marketplace/my-bookings?status=pending&page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "my-bookings"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status: pending, confirmed, completed, cancelled"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all marketplace bookings made by current user (as buyer)"
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Marketplace Booking",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/marketplace/bookings/{{booking_id}}/accept",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "bookings", "{{booking_id}}", "accept"]
+            },
+            "description": "Accept a booking as a seller"
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Marketplace Booking",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/marketplace/bookings/{{booking_id}}/complete",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "bookings", "{{booking_id}}", "complete"]
+            },
+            "description": "Mark marketplace booking as completed"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Marketplace Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_id\": \"pay_marketplace_123\",\n  \"payment_method\": \"card\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/marketplace/bookings/{{booking_id}}/payment",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "bookings", "{{booking_id}}", "payment"]
+            },
+            "description": "Process payment for marketplace booking"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Marketplace Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/marketplace/transactions?type=purchase&page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["marketplace", "transactions"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "purchase",
+                  "description": "Filter by type: purchase or sale"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get marketplace transaction history"
+          },
+          "response": []
+        }
+      ],
+      "description": "Marketplace endpoints for listing and booking waste (OLX-style)"
+    },
+    {
+      "name": "6. Service Providers",
+      "item": [
+        {
+          "name": "Search Service Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/services/search?waste_type=plastic&city=Mumbai&rating=4&page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["services", "search"],
+              "query": [
+                {
+                  "key": "waste_type",
+                  "value": "plastic"
+                },
+                {
+                  "key": "city",
+                  "value": "Mumbai"
+                },
+                {
+                  "key": "rating",
+                  "value": "4",
+                  "description": "Minimum rating"
+                },
+                {
+                  "key": "distance",
+                  "value": "10",
+                  "description": "Distance in km",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search for service providers with filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Provider Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/services/sp_001",
+              "host": ["{{base_url}}"],
+              "path": ["services", "sp_001"]
+            },
+            "description": "Get detailed information about a service provider"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Provider Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/services/sp_001/reviews?page=1&per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["services", "sp_001", "reviews"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get reviews for a service provider"
+          },
+          "response": []
+        },
+        {
+          "name": "Register as Service Provider",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"GreenEco Recyclers\",\n  \"type\": \"Recycling\",\n  \"speciality\": [\"plastic\", \"paper\", \"metal\"],\n  \"location\": {\n    \"address\": \"456 Eco Avenue\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400002\"\n  },\n  \"contact\": {\n    \"email\": \"contact@greeneco.com\",\n    \"phone\": \"+919876543210\"\n  },\n  \"operating_hours\": \"Mon-Sat: 9 AM - 6 PM\",\n  \"capacity\": \"500 kg/day\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/services/register",
+              "host": ["{{base_url}}"],
+              "path": ["services", "register"]
+            },
+            "description": "Register as a service provider"
+          },
+          "response": []
+        }
+      ],
+      "description": "Service provider management endpoints"
+    },
+    {
+      "name": "7. Rewards",
+      "item": [
+        {
+          "name": "Get User Points",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rewards/points",
+              "host": ["{{base_url}}"],
+              "path": ["rewards", "points"]
+            },
+            "description": "Get user's points and transaction history"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Badges",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rewards/badges",
+              "host": ["{{base_url}}"],
+              "path": ["rewards", "badges"]
+            },
+            "description": "Get user's earned badges"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Rewards Catalog",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rewards/catalog",
+              "host": ["{{base_url}}"],
+              "path": ["rewards", "catalog"]
+            },
+            "description": "Get available rewards for redemption"
+          },
+          "response": []
+        },
+        {
+          "name": "Redeem Reward",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reward_id\": \"reward_001\",\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/rewards/redeem",
+              "host": ["{{base_url}}"],
+              "path": ["rewards", "redeem"]
+            },
+            "description": "Redeem a reward using points"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rewards/leaderboard?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["rewards", "leaderboard"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Get community leaderboard"
+          },
+          "response": []
+        }
+      ],
+      "description": "Rewards and gamification endpoints"
+    },
+    {
+      "name": "8. Analytics",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "dashboard"]
+            },
+            "description": "Get dashboard statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/user-stats",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "user-stats"]
+            },
+            "description": "Get user-specific statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Environmental Impact",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/environmental-impact",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "environmental-impact"]
+            },
+            "description": "Get environmental impact metrics"
+          },
+          "response": []
+        }
+      ],
+      "description": "Analytics and reporting endpoints"
+    }
+  ]
+}

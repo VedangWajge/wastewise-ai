@@ -188,9 +188,9 @@ class ReviewSchema(Schema):
 
 # Payment Schema
 class PaymentSchema(Schema):
-    booking_id = fields.Str(required=True)
+    booking_id = fields.Field(required=True)  # Accept both int and string
     amount = fields.Float(required=True, validate=validate.Range(min=1))
-    payment_method = fields.Str(required=True, validate=validate.OneOf(['card', 'upi', 'netbanking', 'wallet']))
+    payment_method = fields.Str(required=True, validate=validate.OneOf(['card', 'upi', 'netbanking', 'wallet', 'razorpay']))
     currency = fields.Str(load_default='INR', validate=validate.OneOf(['INR']))
 
 # Validation helper functions

@@ -1,0 +1,1076 @@
+{
+	"info": {
+		"_postman_id": "wastewise-api-collection-2025",
+		"name": "WasteWise Complete API Collection",
+		"description": "Complete API collection for WasteWise - AI-powered waste management platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "AI Classification",
+			"description": "AI-powered waste classification endpoints",
+			"item": [
+				{
+					"name": "Classify Waste Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text",
+								"description": "Optional - if user is logged in"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": [],
+									"description": "Image file to classify (JPG, PNG, JPEG, GIF)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai/predict",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai",
+								"predict"
+							]
+						},
+						"description": "Upload an image to classify waste type using AI (Gemini, Local, HuggingFace, or OpenAI)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Providers Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ai/providers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai",
+								"providers"
+							]
+						},
+						"description": "Get information about available AI providers and their status"
+					},
+					"response": []
+				},
+				{
+					"name": "Switch AI Provider",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"provider\": \"gemini\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/ai/switch-provider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai",
+								"switch-provider"
+							]
+						},
+						"description": "Switch active AI provider. Options: local, gemini, huggingface, openai"
+					},
+					"response": []
+				},
+				{
+					"name": "Test AI Service",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ai/test",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ai",
+								"test"
+							]
+						},
+						"description": "Test if AI service is running and check provider status"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"description": "User authentication and profile management",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"SecurePassword123!\",\n    \"phone\": \"+1234567890\",\n    \"address\": \"123 Main St, City\",\n    \"user_type\": \"resident\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.tokens && jsonData.tokens.access_token) {",
+									"    pm.environment.set(\"access_token\", jsonData.tokens.access_token);",
+									"    pm.environment.set(\"refresh_token\", jsonData.tokens.refresh_token);",
+									"    console.log(\"Tokens saved to environment\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"SecurePassword123!\",\n    \"remember_me\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with email and password. Returns access and refresh tokens."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Get current user's profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Updated\",\n    \"phone\": \"+1234567891\",\n    \"address\": \"456 New St, City\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Update user profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout current user"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"description": "Waste collection booking management",
+			"item": [
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"service_provider_id\": 1,\n    \"waste_type\": \"plastic\",\n    \"quantity\": 5,\n    \"unit\": \"kg\",\n    \"scheduled_date\": \"2025-11-15\",\n    \"time_slot\": \"morning\",\n    \"pickup_address\": \"123 Main St, City\",\n    \"notes\": \"Please ring doorbell\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"create"
+							]
+						},
+						"description": "Create a new waste collection booking"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/my-bookings?status=pending",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"my-bookings"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending",
+									"description": "Filter by status: pending, confirmed, completed, cancelled"
+								}
+							]
+						},
+						"description": "Get all bookings for current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"1"
+							]
+						},
+						"description": "Get details of a specific booking"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"Schedule changed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bookings/1/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"1",
+								"cancel"
+							]
+						},
+						"description": "Cancel a booking"
+					},
+					"response": []
+				},
+				{
+					"name": "Track Booking",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/bookings/1/track",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bookings",
+								"1",
+								"track"
+							]
+						},
+						"description": "Track booking status and location"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"description": "Payment processing and history",
+			"item": [
+				{
+					"name": "Initiate Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"booking_id\": 1,\n    \"amount\": 150.00,\n    \"payment_method\": \"razorpay\",\n    \"currency\": \"INR\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payments/initiate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"initiate"
+							]
+						},
+						"description": "Initiate a new payment for a booking"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"razorpay_order_id\": \"order_abc123\",\n    \"razorpay_payment_id\": \"pay_xyz789\",\n    \"razorpay_signature\": \"signature_here\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payments/verify",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"verify"
+							]
+						},
+						"description": "Verify payment after Razorpay callback"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Payment History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/payments/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"history"
+							]
+						},
+						"description": "Get user's payment history"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Payment Methods",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/payments/methods",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"methods"
+							]
+						},
+						"description": "Get available payment methods"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Rewards",
+			"description": "Gamification - points, badges, and challenges",
+			"item": [
+				{
+					"name": "Get User Points",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/rewards/points",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"rewards",
+								"points"
+							]
+						},
+						"description": "Get user's reward points balance"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Badges",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/rewards/badges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"rewards",
+								"badges"
+							]
+						},
+						"description": "Get user's earned badges"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Leaderboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/rewards/leaderboard?period=month&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"rewards",
+								"leaderboard"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "month",
+									"description": "week, month, all-time"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get rewards leaderboard"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reward Catalog",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/rewards/catalog",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"rewards",
+								"catalog"
+							]
+						},
+						"description": "Get available rewards to redeem"
+					},
+					"response": []
+				},
+				{
+					"name": "Redeem Reward",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reward_id\": 1,\n    \"points_to_redeem\": 100\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/rewards/redeem",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"rewards",
+								"redeem"
+							]
+						},
+						"description": "Redeem points for a reward"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Services",
+			"description": "Service provider search and management",
+			"item": [
+				{
+					"name": "Search Service Providers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/services/search?waste_type=plastic&latitude=28.7041&longitude=77.1025&radius=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"search"
+							],
+							"query": [
+								{
+									"key": "waste_type",
+									"value": "plastic"
+								},
+								{
+									"key": "latitude",
+									"value": "28.7041"
+								},
+								{
+									"key": "longitude",
+									"value": "77.1025"
+								},
+								{
+									"key": "radius",
+									"value": "10",
+									"description": "Radius in km"
+								}
+							]
+						},
+						"description": "Search for nearby service providers"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Provider Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/services/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"1"
+							]
+						},
+						"description": "Get detailed information about a service provider"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Analytics",
+			"description": "Personal and community analytics",
+			"item": [
+				{
+					"name": "Get Dashboard Analytics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"analytics",
+								"dashboard"
+							]
+						},
+						"description": "Get dashboard statistics"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Personal Analytics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/personal?period=month",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"analytics",
+								"personal"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "month",
+									"description": "week, month, year"
+								}
+							]
+						},
+						"description": "Get personal waste analytics"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Insights",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/analytics/insights?type=personal",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"analytics",
+								"insights"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "personal"
+								}
+							]
+						},
+						"description": "Get AI-generated insights about waste patterns"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Marketplace",
+			"description": "Peer-to-peer waste marketplace",
+			"item": [
+				{
+					"name": "Create Listing",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"waste_type\": \"plastic\",\n    \"quantity\": 10,\n    \"unit\": \"kg\",\n    \"price_per_unit\": 5.0,\n    \"description\": \"Clean plastic bottles\",\n    \"pickup_location\": \"123 Main St\",\n    \"available_from\": \"2025-11-01\",\n    \"available_until\": \"2025-11-30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/marketplace/listings/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"marketplace",
+								"listings",
+								"create"
+							]
+						},
+						"description": "Create a new marketplace listing"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Listings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/marketplace/listings/search?waste_type=plastic&max_price=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"marketplace",
+								"listings",
+								"search"
+							],
+							"query": [
+								{
+									"key": "waste_type",
+									"value": "plastic"
+								},
+								{
+									"key": "max_price",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Search marketplace listings"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Listings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/marketplace/my-listings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"marketplace",
+								"my-listings"
+							]
+						},
+						"description": "Get current user's listings"
+					},
+					"response": []
+				},
+				{
+					"name": "Calculate Price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"waste_type\": \"plastic\",\n    \"quantity\": 10,\n    \"unit\": \"kg\",\n    \"quality\": \"high\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/marketplace/calculate-price",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"marketplace",
+								"calculate-price"
+							]
+						},
+						"description": "Calculate suggested price for waste"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		}
+	]
+}

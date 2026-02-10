@@ -153,3 +153,32 @@ backend/models/*.pkl
 *.cover
 .hypothesis/
 .pytest_cache/
+
+# Secrets and sensitive files
+*.pem
+*.key
+*.cert
+*.crt
+.secret
+.secrets
+secrets.txt
+secrets.json
+credentials.txt
+credentials.json
+
+# But allow security documentation and tools
+!*SECRETS*.md
+!remove_secrets.py
+
+# Backup files that might contain secrets
+*.bak
+*.backup
+*.old
+
+# Postman environment files (may contain tokens)
+*.postman_environment.json
+*Environment.postman_environment.json
+
+# Don't commit actual database files
+backend/wastewise.db
+*.db-journal

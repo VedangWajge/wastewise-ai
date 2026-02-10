@@ -17,3 +17,6 @@ email-validator
 phonenumbers
 redis
 celery
+razorpay
+google-generativeai>=0.3.0
+requests>=2.31.0

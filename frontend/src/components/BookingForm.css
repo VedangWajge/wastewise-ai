@@ -308,6 +308,67 @@ textarea.error {
   100% { transform: rotate(360deg); }
 }
 
+/* Price Estimation Styles */
+.waste-value-info {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.value-badge {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 8px;
+}
+
+.value-note {
+  font-size: 0.9rem;
+  color: #1b5e20;
+  margin: 0;
+}
+
+.cost-section {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.cost-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.cost-section h5 {
+  margin: 0 0 10px 0;
+  color: #555;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.cost-item.subtotal {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #ccc;
+  font-weight: 600;
+}
+
+.cost-item.positive span:last-child {
+  color: #4caf50;
+}
+
+.cost-item.negative span:last-child {
+  color: #f44336;
+}
+
+.cost-note .positive {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   .booking-form-container {
     margin: 10px;
