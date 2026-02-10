@@ -22,7 +22,7 @@ class AIConfig:
     """Configuration for AI classification"""
 
     # Select which AI provider to use (can be changed easily)
-    ACTIVE_PROVIDER = AIProvider.GEMINI  # LOCAL or HUGGINGFACE, GEMINI, OPENAI
+    ACTIVE_PROVIDER = AIProvider.HUGGINGFACE  # LOCAL or HUGGINGFACE, GEMINI, OPENAI
 
     # Fallback provider if primary fails
     FALLBACK_PROVIDER = AIProvider.LOCAL  # Changed from HUGGINGFACE to LOCAL due to API permissions
