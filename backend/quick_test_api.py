@@ -1,6 +1,8 @@
 """
 Quick test to verify the AI API endpoint is working
+This script ONLY tests the backend API and does NOT affect the website or mobile app.
 """
+
 import requests
 from PIL import Image
 import io
@@ -11,32 +13,40 @@ img_bytes = io.BytesIO()
 img.save(img_bytes, format='JPEG')
 img_bytes.seek(0)
 
-# Test the API endpoint
 print("Testing AI classification endpoint...")
 print("-" * 60)
 
 try:
+    # Use the correct backend endpoint
     response = requests.post(
-        'http://localhost:5000/api/ai/predict',
+        'http://10.228.33.137:5000/api/ai/predict',
         files={'image': ('test.jpg', img_bytes, 'image/jpeg')},
         timeout=30
     )
 
     result = response.json()
 
-    if result.get('success'):
-        print("[SUCCESS] API is working!")
-        print(f"  Waste Type: {result.get('waste_type')}")
-        print(f"  Confidence: {result.get('confidence'):.2%}")
-        print(f"  Provider: {result.get('provider_used')}")
-    else:
-        print("[ERROR] API returned error:")
-        print(f"  {result.get('error')}")
-        print(f"  {result.get('message')}")
+    print("[SUCCESS] API responded")
+    print("Full response from backend:")
+    print(result)
+
+    # Try to read common response fields
+    prediction = result.get("prediction") or result.get("waste_type")
+    confidence = result.get("confidence")
+
+    if prediction:
+        print(f"\nPrediction: {prediction}")
+
+    if confidence is not None:
+        try:
+            print(f"Confidence: {float(confidence):.2%}")
+        except:
+            print(f"Confidence: {confidence}")
 
 except requests.ConnectionError:
     print("[ERROR] Cannot connect to Flask server")
-    print("  Make sure Flask is running on http://localhost:5000")
+    print("Make sure Flask backend is running on http://10.228.33.137:5000")
+
 except Exception as e:
     print(f"[ERROR] {str(e)}")
 

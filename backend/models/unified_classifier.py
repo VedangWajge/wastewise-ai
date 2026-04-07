@@ -1,10 +1,12 @@
 """
 Waste Classifier using FastAI
-Simple classifier using local waste_model.pkl
+Fixed version (handles dtype error + stable inference)
 """
 
 import os
 import sys
+from fastai.vision.all import load_learner, PILImage
+import pathlib
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -26,36 +28,32 @@ class WasteClassifier:
     def _load_model(self):
         """Load FastAI model from .pkl file"""
         try:
-            from fastai.vision.all import load_learner
-            import pathlib
-            
-            # Fix for loading models trained on Linux/Mac (Posix) on Windows
             if os.name == 'nt':
                 posix_backup = pathlib.PosixPath
                 try:
                     pathlib.PosixPath = pathlib.WindowsPath
-                    
+
                     model_path = self.config.LOCAL_MODEL_PATH
-                    
+
                     if not os.path.exists(model_path):
                         raise FileNotFoundError(f"Model not found at {model_path}")
-                    
+
                     print(f"[INFO] Loading FastAI model from {model_path}")
                     self.model = load_learner(model_path)
                     print(f"[INFO] Model loaded successfully")
+
                 finally:
-                    # Restore original PosixPath to avoid side effects
                     pathlib.PosixPath = posix_backup
             else:
-                # Standard loading for non-Windows systems
                 model_path = self.config.LOCAL_MODEL_PATH
+
                 if not os.path.exists(model_path):
                     raise FileNotFoundError(f"Model not found at {model_path}")
-                
+
                 print(f"[INFO] Loading FastAI model from {model_path}")
                 self.model = load_learner(model_path)
                 print(f"[INFO] Model loaded successfully")
-            
+
         except Exception as e:
             print(f"[ERROR] Failed to load model: {e}")
             raise
@@ -63,13 +61,6 @@ class WasteClassifier:
     def classify(self, image_path, top_k=None):
         """
         Classify waste image
-
-        Args:
-            image_path: Path to image file
-            top_k: Number of top predictions (default from config)
-
-        Returns:
-            dict: Classification results with waste_type, confidence, etc.
         """
         if not self.model:
             raise RuntimeError("Model not loaded")
@@ -77,36 +68,42 @@ class WasteClassifier:
         top_k = top_k or self.config.TOP_K_PREDICTIONS
 
         try:
-            # Run prediction
-            pred_class, pred_idx, outputs = self.model.predict(image_path)
-            
-            # Get all class labels from the model
+            # ✅ FIX: Always convert to FastAI PILImage
+            img = PILImage.create(image_path)
+
+            # Run prediction safely
+            pred_class, pred_idx, outputs = self.model.predict(img)
+
             labels = self.model.dls.vocab
             probabilities = outputs.tolist()
-            
-            # Create list of (label, probability) pairs and sort by probability
-            predictions_list = [(labels[i], probabilities[i]) for i in range(len(labels))]
+
+            # Pair labels with probabilities
+            predictions_list = [
+                (labels[i], probabilities[i]) for i in range(len(labels))
+            ]
+
+            # Sort by confidence
             predictions_list.sort(key=lambda x: x[1], reverse=True)
-            
-            # Get top k predictions
+
+            # Top predictions
             top_predictions = predictions_list[:top_k]
             top_class = top_predictions[0][0]
             top_confidence = top_predictions[0][1]
-            
+
             return {
                 'waste_type': self.config.CATEGORY_MAPPING.get(top_class, top_class),
-                'raw_category': top_class,
+                'raw_category': str(top_class),
                 'confidence': float(top_confidence),
                 'all_predictions': [
                     {
-                        'class': label,
+                        'class': str(label),
                         'mapped_type': self.config.CATEGORY_MAPPING.get(label, label),
                         'confidence': float(prob)
                     }
                     for label, prob in top_predictions
                 ]
             }
-            
+
         except Exception as e:
             print(f"[ERROR] Classification failed: {e}")
             raise
@@ -162,12 +159,10 @@ class WasteClassifier:
         return recommendations.get(waste_type, recommendations['general'])
 
 
-# Example usage and testing
+# Test
 if __name__ == "__main__":
-    # Initialize classifier
     classifier = WasteClassifier()
 
-    # Test image path
     test_image = "test_waste.jpg"
 
     if os.path.exists(test_image):

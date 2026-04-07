@@ -22,7 +22,7 @@ print("\n1. Testing /api/ai/predict (Frontend endpoint)")
 print("-" * 60)
 try:
     response = requests.post(
-        'http://localhost:5000/api/ai/predict',
+        'http://10.228.33.137:5000/api/ai/predict',
         files={'image': ('test.jpg', img_bytes.getvalue(), 'image/jpeg')},
         timeout=30
     )
@@ -51,7 +51,7 @@ print("\n2. Testing /api/classify (Legacy endpoint)")
 print("-" * 60)
 try:
     response = requests.post(
-        'http://localhost:5000/api/classify',
+        'http://10.228.33.137:5000/api/classify',
         files={'image': ('test.jpg', img_bytes.getvalue(), 'image/jpeg')},
         timeout=30
     )

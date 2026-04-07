@@ -6,17 +6,22 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 1. Backend Setup:
     cd backend
-    python -m venv venv
-    venv\Scripts\activate # Windows
-    pip install -r requirements.txt
+    py -3.10 -m venv waste_env
+    waste_env\Scripts\activate
+    pip install -r requirements_fixed.txt
     python app.py
 2. Frontend Setup:
     cd frontend
     npm install
     npm start
+3.mobile -
+   cd mobile
+   npm install
+   npx expo start
 3. Access Application:
     Frontend: http://localhost:3000
     Backend API: http://localhost:5000
+
 
 ## Available Scripts
 

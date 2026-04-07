@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Run get-ip.bat (Windows) or get-ip.sh (Mac/Linux) to find your IP
 // For Android emulator use: 10.0.2.2:5000/api
 // For iOS simulator use: localhost:5000/api or 127.0.0.1:5000/api
-const API_BASE_URL = 'http://192.168.1.2:5000/api'; // Update this with your computer's IP
+const API_BASE_URL = 'http://10.228.33.137:5000/api';
 
 class ApiService {
   constructor() {
@@ -135,9 +135,9 @@ class ApiService {
         name: `waste-image-${Date.now()}.jpg`,
       };
 
-      formData.append('image', imageFile);
+formData.append('image', imageFile);
 
-      const response = await this.client.post('/classify', formData, {
+      const response = await this.client.post('/api/classify', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
