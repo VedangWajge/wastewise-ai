@@ -10,7 +10,11 @@ import uuid
 from datetime import datetime, timedelta
 from utils.pricing import WastePricing
 import os
-import razorpay
+
+try:
+    import razorpay
+except Exception:
+    razorpay = None
 
 marketplace_bp = Blueprint('marketplace', __name__, url_prefix='/api/marketplace')
 
@@ -20,8 +24,11 @@ RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
 
 # Initialize Razorpay client
 razorpay_client = None
-if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
-    razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+if razorpay is not None and RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
+    try:
+        razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+    except Exception:
+        razorpay_client = None
 
 def get_db_connection():
     """Get database connection"""

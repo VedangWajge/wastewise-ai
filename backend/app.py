@@ -12,8 +12,7 @@ load_dotenv()
 from config.settings import config
 from models.database import DatabaseManager
 from models.user_manager import UserManager
-from models.waste_classifier import WasteClassifier
-from models.unified_classifier import UnifiedWasteClassifier  # New unified classifier
+from models.unified_classifier import UnifiedWasteClassifier
 
 # Import your route blueprints
 from routes.auth import auth_bp
@@ -42,8 +41,7 @@ def create_app(config_name='development'):
     # DB & Model instances
     db = DatabaseManager()
     user_manager = UserManager()
-    # Use unified classifier instead of old WasteClassifier
-    classifier = UnifiedWasteClassifier()  # Supports multiple AI providers!
+    classifier = UnifiedWasteClassifier()
 
     # JWT error handlers (omitted for brevity)…
     # @jwt.expired_token_loader...
@@ -86,7 +84,19 @@ def create_app(config_name='development'):
         file.save(filepath)
 
         # 3) Classify using unified classifier (supports multiple AI providers)
-        result = classifier.classify(filepath)
+        try:
+            result = classifier.classify(filepath)
+        except Exception as exc:
+            result = {
+                'waste_type': 'general',
+                'confidence': 0.35,
+                'recommendations': classifier.get_recommendations('general'),
+                'environmental_impact': 'Proper disposal helps protect the environment',
+                'all_predictions': [],
+                'provider_used': 'fallback',
+                'raw_category': 'fallback',
+                'error': str(exc)
+            }
 
         # Get recommendations
         recommendations = classifier.get_recommendations(result['waste_type'])

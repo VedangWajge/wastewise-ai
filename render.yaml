@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: wastewise-backend
+    env: python
+    branch: main
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn -w 4 -b 0.0.0.0:$PORT backend.app:create_app()
+    env:
+      - key: FLASK_DEBUG
+        value: 'False'
+      - key: SECRET_KEY
+        value: 'wastewise_secret_key_2024_prod'
+      - key: JWT_SECRET_KEY
+        value: 'jwt_secret_key_2024'
+      - key: DATABASE_URL
+        value: 'sqlite:///wastewise.db'
+      - key: UPLOAD_FOLDER
+        value: '/tmp/uploads'
+  - type: static
+    name: wastewise-frontend
+    env: static
+    branch: main
+    buildCommand: cd frontend && npm ci && npm run build
+    publishPath: frontend/build
+    env:
+      - key: REACT_APP_API_URL
+        value: 'https://wastewise-backend.onrender.com'

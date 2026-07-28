@@ -1,6 +1,6 @@
 // api.js
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 class ApiService {
   constructor() {
@@ -162,11 +162,7 @@ class ApiService {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-<<<<<<< HEAD
     const response = await fetch(`${API_BASE_URL}/classify`, {
-=======
-    const response = await fetch(`${API_BASE_URL}/ai/predict`, {
->>>>>>> 437fca4239e92646ca6652998d199c99a8468e7e
       method: 'POST',
       headers,
       body: formData
@@ -218,14 +214,10 @@ class ApiService {
     return data;
   }
 
-<<<<<<< HEAD
-=======
   // Alias for getUserBookings - for consistency
   async getBookings(status = null) {
     return this.getUserBookings(status);
   }
-
->>>>>>> 437fca4239e92646ca6652998d199c99a8468e7e
   async getBookingDetails(bookingId) {
     const response = await this.makeRequest(`/bookings/${bookingId}`);
     const data = await response.json();
@@ -336,8 +328,6 @@ class ApiService {
     return data;
   }
 
-<<<<<<< HEAD
-=======
   // Get all rewards data (points, badges, etc.) - for Profile component
   async getRewards() {
     try {
@@ -362,7 +352,7 @@ class ApiService {
       return {
         success: true,
         points: pointsValue,
-        pointsDetails: pointsData.points, // Keep original for detailed view
+        pointsDetails: pointsData.points,
         level: pointsData.level || 1,
         badges: badgesData.badges || [],
         total_badges: badgesData.total_badges || 0
@@ -379,8 +369,6 @@ class ApiService {
       };
     }
   }
-
->>>>>>> 437fca4239e92646ca6652998d199c99a8468e7e
   // === PAYMENTS ===
   async getPaymentMethods() {
     const response = await this.makeRequest('/payments/methods');
