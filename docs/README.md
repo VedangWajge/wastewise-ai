@@ -345,7 +345,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 🔄 Gamification
 - 🔄 Enterprise features
 
----
+## 📸 Screenshots
+<img width="1860" height="909" alt="Screenshot 2026-04-28 105802" src="https://github.com/user-attachments/assets/b470e5e8-1ff8-46d5-aa10-e385b72a6d71" />
+<img width="1708" height="871" alt="Screenshot 2026-04-29 094041" src="https://github.com/user-attachments/assets/40505525-d346-4839-b445-a1c09e247836" />
+<img width="1814" height="907" alt="Screenshot 2026-02-10 235117" src="https://github.com/user-attachments/assets/1dc301d2-407a-4c48-bbdb-1d8d7f68a0d8" />
+<img width="1874" height="911" alt="Screenshot 2026-04-28 105819" src="https://github.com/user-attachments/assets/a88ed89d-c6d0-476e-a6f1-ed5f04439ec2" />
+<img width="1844" height="865" alt="Screenshot 2026-02-11 001640" src="https://github.com/user-attachments/assets/a56fed90-f00f-405a-9849-3e529d01af4d" />
+
+
 
 **Made with ❤️ for a sustainable future**
 
